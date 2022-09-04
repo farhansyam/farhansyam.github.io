@@ -1,273 +1,119 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>CodePen - Birthday Countdown</title>
-  <style>
-    @import url("https://fonts.googleapis.com/css?family=Quicksand:400,700");
-@import url("https://fonts.googleapis.com/css?family=Graduate");
-body {
-  background-color: darkgray;
-}
-body #container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  max-width: 50rem;
-  width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  letter-spacing: 0.15em;
-}
-@media screen and (max-width: 525px) {
-  body #container {
-    top: calc(50% - -25px);
-  }
-}
-body #container #cake {
-  margin: 0 auto 10rem;
-  width: 200px;
-  height: 50px;
-  background-color: #8a6b58;
-  border-radius: 100%;
-  box-shadow: 0px 4px 0px #6b5344, 0px 8px 0px #6b5344, 0px 12px 0px #6b5344, 0px 16px 0px #6b5344, 0px 20px 0px #6b5344, 0px 24px 0px #6b5344, 0px 28px 0px #6b5344, 0px 32px 0px #f8ecc9, 0px 36px 0px #f8ecc9, 0px 40px 0px #ca6060, 0px 44px 0px #ca6060, 0px 48px 0px #f8ecc9, 0px 52px 0px #f8ecc9, 0px 56px 0px #6b5344, 0px 60px 0px #6b5344, 0px 64px 0px #6b5344, 0px 68px 0px #6b5344, 0px 72px 0px #6b5344, 0px 76px 0px #6b5344, 0px 80px 0px #6b5344;
-}
-@media screen and (max-width: 525px) {
-  body #container #cake {
-    margin: 0 auto 9rem;
-  }
-}
-body #container #cake::before {
-  content: "";
-  position: absolute;
-  width: 7px;
-  height: 5px;
-  background-color: lightblue;
-  box-shadow: 0px 5px 0px white, 0px 10px 0px lightblue, 0px 15px 0px white, 0px 20px 0px lightblue, 0px 25px 0px white, 0px 30px 0px lightblue, 0px 35px 0px white, 0px 40px 0px lightblue, 0px 45px 0px white, 0px 50px 0px lightblue;
-  top: -25px;
-}
-body #container #cake #flame {
-  width: 18px;
-  height: 18px;
-  background: yellow;
-  position: absolute;
-  z-index: 6;
-  border-radius: 80% 0 55% 50%/55% 0 80% 50%;
-  left: 50%;
-  top: -40px;
-  margin-left: -5px;
-  transform: rotateZ(-45deg);
-  animation: flame-flicker 0.9s ease infinite;
-}
-body #container #cake #flame #inner-flame {
-  width: 10px;
-  height: 10px;
-  background: #d1835c;
-  position: absolute;
-  z-index: 8;
-  border-radius: 80% 0 55% 50%/55% 0 80% 50%;
-  left: 50%;
-  margin-left: -7px;
-  bottom: 2px;
-  opacity: 0.4;
-}
-body #container #cake .underline {
-  position: relative;
-  bottom: -150px;
-  left: 50%;
-  -webkit-transform: translateX(-50%);
-  transform: translateX(-50%);
-  width: 130px;
-  height: 1px;
-  background-color: #c3c3c3;
-}
-body #container #cake .underline::before, body #container #cake .underline::after {
-  content: "";
-  position: absolute;
-  height: 1px;
-  left: 50%;
-  -webkit-transform: translateX(-50%);
-  transform: translateX(-50%);
-}
-body #container #cake .underline::before {
-  top: 10px;
-  width: 110px;
-  background-color: #c3c3c3;
-}
-body #container #cake .underline::after {
-  top: 20px;
-  width: 90px;
-  background-color: #c3c3c3;
-}
-body #container #countdown #cdDays, body #container #countdown #cdHours, body #container #countdown #cdMins, body #container #countdown #cdSecs {
-  display: inline-block;
-  width: 24%;
-  background-color: #c3c3c3;
-  font-family: "Graduate", cursive;
-}
-@media screen and (max-width: 767px) {
-  body #container #countdown #cdDays, body #container #countdown #cdHours, body #container #countdown #cdMins, body #container #countdown #cdSecs {
-    width: 22%;
-  }
-}
-@media screen and (max-width: 525px) {
-  body #container #countdown #cdDays, body #container #countdown #cdHours, body #container #countdown #cdMins, body #container #countdown #cdSecs {
-    width: 33%;
-  }
-}
-@media screen and (max-width: 525px) {
-  body #container #countdown #cdDays, body #container #countdown #cdHours {
-    margin-bottom: 1%;
-  }
-}
-body #container #countdown .spacer {
-  position: relative;
-  content: "";
-  display: block;
-  height: 20px;
-  background: white;
-}
-body #container #countdown .spacer::before, body #container #countdown .spacer::after {
-  content: "";
-  position: absolute;
-  top: 5px;
-  width: 10px;
-  height: 10px;
-  background: darkgray;
-  border-radius: 50%;
-}
-body #container #countdown .spacer::before {
-  left: 0.8rem;
-}
-body #container #countdown .spacer::after {
-  right: 0.8rem;
-}
-body #container #countdown #daysNum, body #container #countdown #hoursNum, body #container #countdown #minsNum, body #container #countdown #secsNum {
-  background-color: white;
-  color: black;
-  opacity: 0.6;
-  padding: 2rem 0;
-  font-size: 3em;
-  box-shadow: 0 15px 10px -10px rgba(181, 131, 141, 0);
-}
-@media screen and (max-width: 525px) {
-  body #container #countdown #daysNum, body #container #countdown #hoursNum, body #container #countdown #minsNum, body #container #countdown #secsNum {
-    padding: 1rem 0;
-  }
-}
-@media screen and (max-width: 450px) {
-  body #container #countdown #daysNum, body #container #countdown #hoursNum, body #container #countdown #minsNum, body #container #countdown #secsNum {
-    font-size: 11vw;
-  }
-}
-body #container #countdown .label {
-  padding: 1.2rem 0;
-  opacity: 0.6;
-  font-family: "Quicksand", sans-serif;
-}
-@media screen and (max-width: 525px) {
-  body #container #countdown .label {
-    padding: 0.6rem 0;
-  }
-}
-@media screen and (max-width: 450px) {
-  body #container #countdown .label {
-    font-size: 4.5vw;
-  }
-}
-body #container #countdown #text {
-  color: #767676;
-  padding-top: 2rem;
-  font-family: "Quicksand", sans-serif;
-}
-@media screen and (max-width: 525px) {
-  body #container #countdown #text {
-    padding-top: 1.5rem;
-  }
-}
-
-@keyframes flame-flicker {
-  0%, 100% {
-    width: 16px;
-    height: 17px;
-  }
-  25% {
-    width: 19px;
-    height: 17px;
-  }
-  50% {
-    width: 17px;
-    height: 16px;
-  }
-  75% {
-    width: 17px;
-    height: 19px;
-  }
-}
-  </style>
+	
+	<!-- Basic -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>M Farhan Syamsuddin</title>
+	<meta name="description" content="">
+	<meta name="keywords" content="">
+	
+	<!-- Mobile Specific Metas -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	
+	<!-- Load Fonts -->
+	<link href='https://fonts.googleapis.com/css?family=Roboto+Mono:400,100,300italic,300,100italic,400italic,500,500italic,700,700italic&amp;subset=latin,cyrillic' rel='stylesheet'>
+	
+	<!-- CSS -->
+	<link rel="stylesheet" href="css/glitche-basic.css" />
+	<link rel="stylesheet" href="css/glitche-layout.css" />
+	<link rel="stylesheet" href="css/ionicons.css" />
+	<link rel="stylesheet" href="css/magnific-popup.css" />
+	<link rel="stylesheet" href="css/animate.css" />
+	
+	<!--[if lt IE 9]>
+	<script src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	
+	<!-- Favicons -->
+	<link rel="shortcut icon" href="images/favicons/f.png">
 </head>
-<body>
-<!-- partial:index.partial.html -->
-<div id="container">
-  <div id="cake">
-    <div id="flame">
-      <div id="inner-flame"></div>
-    </div>
-    <div class="underline"></div>
-  </div>
-  <div id="countdown">
-    <h1 class="label">20</h1>
-    <div id="cdDays">
-      <div class="spacer"></div>
-      <div id="daysNum"></div>
-      <div class="label">DAY(S)</div>
-    </div>
-    <div id="cdHours">
-      <div class="spacer"></div>
-      <div id="hoursNum"></div>
-      <div class="label">HOURS</div>
-    </div>
-    <div id="cdMins">
-      <div class="spacer"></div>
-      <div id="minsNum"></div>
-      <div class="label">MINUTES</div>
-    </div>
-    <div id="cdSecs">
-      <div class="spacer"></div>
-      <div id="secsNum"></div>
-      <div class="label">SECONDS</div>
-    </div>
-    <div id="text">UNTIL Niaa Birthday</div>
-  </div>
-</div>
-<!-- partial -->
 
+<body>	
+	
+	<!-- Preloader -->
+	<div class="preloader">
+		<div class="centrize full-width">
+			<div class="vertical-center">
+				<div class="pre-inner">
+					<div class="load typing-load"><p>loading...</p></div>
+					<span class="typed-load"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Container -->
+	<div class="container">
+		
+		<!-- Header -->
+		<header>
+			<div class="head-top">
+				<a href="#" class="menu-btn"><span></span></a>
+				<div class="top-menu">
+					<ul>
+						<li class="active"><a href="index.html" class="lnk">Home</a></li>
+						<li><a href="resume.html" class="lnk">Resume</a></li>
+						<li><a href="portfolio.html" class="lnk">Portfolio</a></li>
+						<li><a href="contacts.html" class="btn">Contacts</a></li>
+					</ul>
+				</div>
+			</div>
+		</header>
+		
+		<!-- Wrapper -->
+		<div class="wrapper">
+		
+			<!-- Started -->
+			<div class="section started">
+				<div class="centrize full-width">
+					<div class="vertical-center">
+						<div class="started-content">
+							<div class="h-title glitch-effect" data-text="I'm Farhan">I'm <span>Farhan</span></div>
+							<div class="h-subtitle typing-subtitle">
+								<p>Assalamu'alaikum.</p>
+								<p>Web Developer and Founder Lezicode.</p>
+								<p>Based in Bogor ,Indonesia.</p>
+							</div>
+							<span class="typed-subtitle"></span>
+						</div>
+					</div>
+				</div>
+			</div>
+		
+		</div>
+		
+		<!-- Footer -->
+		<footer>
+			<div class="soc">
+				<a target="_blank" href="https://facebook.com/mfarhans215"><span class="ion ion-social-facebook"></span></a>
+				<a target="_blank" href="https://github.com/farhansyam"><span class="ion ion-social-github"></span></a>
+				<a target="_blank" href="https://www.instagram.com/farhan_syamsuddin"><span class="ion ion-social-instagram-outline"></span></a>
+			</div>
+			<div class="copy">Template By © 2020 Glitche. All rights reserved.</div>
+			<div class="clr"></div>
+		</footer>
+		
+		<!-- Lines -->
+		<div class="line top"></div>
+		<div class="line bottom"></div>
+		<div class="line left"></div>
+		<div class="line right"></div>
+		
+	</div>
+	
+	<!-- jQuery Scripts -->
+    <script src="js/jquery.min.js"></script>
+	<script src="js/jquery.validate.js"></script>
+	<script src="js/typed.js"></script>
+	<script src="js/magnific-popup.js"></script>
+	<script src="js/masonry.pkgd.js"></script>
+	<script src="js/imagesloaded.pkgd.js"></script>
+	<script src="js/masonry-filter.js"></script>
+	
+	<!-- Main Scripts -->
+	<script src="js/glitche-scripts.js"></script>
+	
 </body>
-<script>
-  // Set the date we're counting down to
-    var endDate = new Date(2023, 8, 3, 00, 00, 00, 0).getTime();
-    // Update the count down every 1 second
-    var x = setInterval(function () {
-      // Get todays date and time
-      var now = new Date().getTime();
-      // Find the distance between now an the count down date
-      var distance = endDate - now;
-      // Time calculations for days, hours, minutes and seconds
-      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      // Output the result in elements with id="cdHour/cdMin/cdSec"
-      document.getElementById("daysNum").innerHTML = ("0" + days).slice(-3);
-      document.getElementById("hoursNum").innerHTML = ("0" + hours).slice(-2);
-      document.getElementById("minsNum").innerHTML = ("0" + minutes).slice(-2);
-      document.getElementById("secsNum").innerHTML = ("0" + seconds).slice(-2);
-      // If the count down is over, write some text 
-      if (distance < 0) {
-        clearInterval(x);
-        document.getElementById("countContainer").innerHTML = "EXPIRED";
-      }
-    }, 1000);
-</script>
 </html>
