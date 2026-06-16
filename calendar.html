@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LenaTemplate — Etsy Manager</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#f7f5f0;--surface:#ffffff;--surface2:#f0ede6;--border:#e4dfd5;--border2:#cdc8bc;--text:#1a1816;--muted:#8a8478;--accent:#b85c38;--accent2:#d4784e;--accent-bg:rgba(184,92,56,0.08);--gold:#c9952a;--gold-bg:rgba(201,149,42,0.1);--c-now:#c0392b;--c-now-bg:rgba(192,57,43,0.1);--c-urgent:#d35400;--c-urgent-bg:rgba(211,84,0,0.1);--c-soon:#b7960c;--c-soon-bg:rgba(183,150,12,0.1);--c-ok:#27ae60;--c-ok-bg:rgba(39,174,96,0.1);--c-far:#2980b9;--c-far-bg:rgba(41,128,185,0.1);--cat-us:#2980b9;--cat-intl:#27ae60;--cat-sport:#e67e22;--cat-life:#8e44ad;--cat-religious:#16a085;--cat-seasonal:#c0392b;--cat-social:#2c3e50;--cat-asian:#d35400}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+@media(max-width:768px){.app{grid-template-columns:1fr}}
+.sidebar{background:var(--text);color:var(--bg);padding:24px 0;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+@media(max-width:768px){.sidebar{display:none}}
+.sidebar-logo{padding:0 20px 24px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.sidebar-logo-name{font-family:'DM Serif Display',serif;font-size:20px;color:#f7f5f0;letter-spacing:0.01em}
+.sidebar-logo-sub{font-size:10px;color:rgba(247,245,240,0.4);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px}
+.sidebar-nav{padding:16px 0;flex:1}
+.nav-section{font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(247,245,240,0.3);padding:12px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:13px;color:rgba(247,245,240,0.6);cursor:pointer;transition:all 0.15s;border-left:2px solid transparent}
+.nav-item:hover{color:#f7f5f0;background:rgba(255,255,255,0.05)}
+.nav-item.active{color:#f7f5f0;border-left-color:var(--accent2);background:rgba(255,255,255,0.06)}
+.nav-item .nav-count{margin-left:auto;background:rgba(255,255,255,0.1);border-radius:99px;padding:1px 7px;font-size:10px}
+.sidebar-stats{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1);margin-top:auto}
+.s-stat{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;color:rgba(247,245,240,0.5)}
+.s-stat b{color:rgba(247,245,240,0.9);font-weight:500}
+.main{min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:50}
+.topbar-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);flex:1;min-width:120px}
+.search-wrap{position:relative;flex:1;max-width:260px}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px 7px 32px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s}
+input[type=text]:focus{border-color:var(--accent)}
+input[type=text]::placeholder{color:var(--muted)}
+.view-btns{display:flex;gap:4px}
+.vbtn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s}
+.vbtn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+#dashView{padding:24px}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.dash-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;transition:all 0.15s}
+.dash-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.dc-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+.dc-value{font-family:'DM Serif Display',serif;font-size:28px;color:var(--text);line-height:1}
+.dc-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.dc-value.red{color:var(--c-now)}.dc-value.orange{color:var(--c-urgent)}.dc-value.green{color:var(--c-ok)}.dc-value.gold{color:var(--gold)}
+.progress-bar-wrap{margin-bottom:16px}
+.progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px}
+.progress-bar{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;background:var(--accent);transition:width 0.4s}
+.upcoming-list{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.upcoming-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em}
+.upcoming-row{display:grid;grid-template-columns:8px 1fr auto auto;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;cursor:pointer;transition:background 0.1s}
+.upcoming-row:hover{background:var(--surface2)}
+.upcoming-row:last-child{border-bottom:none}
+.upcoming-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.upcoming-name{font-weight:500}
+.upcoming-date{font-size:11px;color:var(--muted)}
+.upcoming-dl{font-size:11px;font-weight:500;padding:2px 8px;border-radius:99px}
+.dl-now{background:var(--c-now-bg);color:var(--c-now)}.dl-urgent{background:var(--c-urgent-bg);color:var(--c-urgent)}.dl-soon{background:var(--c-soon-bg);color:var(--c-soon)}.dl-ok{background:var(--c-ok-bg);color:var(--c-ok)}.dl-far{background:var(--c-far-bg);color:var(--c-far)}
+.filter-bar{padding:12px 24px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.fbtn{padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.fbtn:hover{background:var(--surface2);color:var(--text)}
+.fbtn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.fbtn.fire{border-color:var(--c-now);color:var(--c-now)}
+.fbtn.fire.active{background:var(--c-now);color:#fff;border-color:var(--c-now)}
+#calView{padding:20px 24px}
+.month-block{margin-bottom:28px}
+.month-hdr{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.month-name{font-family:'DM Serif Display',serif;font-size:20px;color:var(--text)}
+.month-peak{font-size:11px;color:var(--accent);background:var(--accent-bg);padding:2px 8px;border-radius:99px}
+.month-line{flex:1}
+.month-count{font-size:11px;color:var(--muted);background:var(--surface2);padding:2px 8px;border-radius:99px;border:1px solid var(--border)}
+.events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.ecard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+.ecard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.ecard.dl-now::before{background:var(--c-now)}.ecard.dl-urgent::before{background:var(--c-urgent)}.ecard.dl-soon::before{background:var(--c-soon)}.ecard.dl-ok::before{background:var(--c-ok)}.ecard.dl-far::before{background:var(--c-far)}
+.ecard:hover{border-color:var(--border2);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.ecard.hidden{display:none}
+.ecard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.ecard-name{font-size:13px;font-weight:500;color:var(--text);line-height:1.3}
+.ecard-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.ecard-badges{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.cat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pri-badge{font-size:9px;padding:2px 6px;border-radius:99px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;border:1px solid}
+.pb-now{background:var(--c-now-bg);color:var(--c-now);border-color:rgba(192,57,43,0.3)}.pb-urgent{background:var(--c-urgent-bg);color:var(--c-urgent);border-color:rgba(211,84,0,0.3)}.pb-soon{background:var(--c-soon-bg);color:var(--c-soon);border-color:rgba(183,150,12,0.3)}.pb-ok{background:var(--c-ok-bg);color:var(--c-ok);border-color:rgba(39,174,96,0.3)}.pb-far{background:var(--c-far-bg);color:var(--c-far);border-color:rgba(41,128,185,0.3)}
+.ecard-dates{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.date-chip{font-size:10px;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.chip-event{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.chip-dl{color:#fff;font-weight:500}
+.chip-now{background:var(--c-now)}.chip-urgent{background:var(--c-urgent)}.chip-soon{background:var(--c-soon)}.chip-ok{background:var(--c-ok)}.chip-far{background:var(--c-far)}
+.ecard-angle{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px}
+.ecard-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.ecard-market{font-size:10px;color:var(--muted)}
+.status-row{display:flex;align-items:center;gap:6px}
+.status-btn{font-size:10px;padding:2px 8px;border-radius:99px;border:1px solid;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.status-none{border-color:#cdc8bc;color:#8a8478}
+.status-draft{border-color:var(--c-soon);color:var(--c-soon);background:var(--c-soon-bg)}
+.status-done{border-color:var(--c-ok);color:var(--c-ok);background:var(--c-ok-bg)}
+.listing-count{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.listing-count input{width:32px;text-align:center;padding:1px 4px;border:1px solid var(--border);border-radius:4px;font-size:10px;background:var(--surface2);color:var(--text);font-family:'DM Sans',sans-serif}
+.listing-count input:focus{outline:none;border-color:var(--accent)}
+.modal-overlay{position:fixed;inset:0;background:rgba(26,24,22,0.5);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:12px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:sticky;top:0;background:var(--surface);z-index:10}
+.modal-title{font-family:'DM Serif Display',serif;font-size:18px;line-height:1.2}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:4px;line-height:1}
+.modal-close:hover{background:var(--surface2);color:var(--text)}
+.modal-body{padding:20px 24px}
+.modal-section{margin-bottom:20px}
+.modal-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+.modal-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical;min-height:80px;outline:none;transition:border-color 0.2s;line-height:1.5}
+textarea:focus{border-color:var(--accent)}
+.status-select{display:flex;gap:6px;flex-wrap:wrap}
+.ss-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;color:var(--muted)}
+.ss-btn:hover{background:var(--surface2)}
+.ss-btn.sel-none.active{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.ss-btn.sel-draft.active{background:var(--c-soon-bg);color:var(--c-soon);border-color:var(--c-soon)}
+.ss-btn.sel-done.active{background:var(--c-ok-bg);color:var(--c-ok);border-color:var(--c-ok)}
+.target-input{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.target-input input{width:60px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface2);color:var(--text);font-family:'DM Sans',sans-serif;outline:none}
+.target-input input:focus{border-color:var(--accent)}
+.modal-save{background:var(--text);color:var(--bg);border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;transition:opacity 0.15s;width:100%;margin-top:4px}
+.modal-save:hover{opacity:0.85}
+#listView{padding:0 24px 24px;display:none}
+.list-hdr{display:grid;grid-template-columns:8px 1fr 110px 130px 90px 80px;gap:10px;padding:8px 12px;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid var(--border);margin-top:20px;sticky;top:56px;background:var(--bg)}
+.list-section-hdr{font-family:'DM Serif Display',serif;font-size:15px;color:var(--text);padding:14px 12px 6px;border-bottom:1px solid var(--border);margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lrow{display:grid;grid-template-columns:8px 1fr 110px 130px 90px 80px;gap:10px;padding:9px 12px;border-radius:6px;align-items:center;font-size:12px;border-bottom:1px solid var(--border);transition:background 0.1s;cursor:pointer}
+.lrow:hover{background:var(--surface2)}
+.lrow.hidden{display:none}
+.lrow-dot{width:7px;height:7px;border-radius:50%}
+.lrow-name{font-weight:500;color:var(--text)}
+.lrow-sub{font-size:10px;color:var(--muted)}
+.lrow-date{color:var(--muted);font-size:11px}
+.lrow-status{font-size:10px;padding:2px 8px;border-radius:99px;text-align:center;width:fit-content;border:1px solid}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transform:translateY(8px);transition:all 0.25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.hidden{display:none!important}
+@media(max-width:600px){
+  .topbar{padding:12px 16px}
+  #calView,#dashView{padding:14px 16px}
+  #listView{padding:0 16px 14px}
+  .events-grid{grid-template-columns:1fr}
+  .dash-grid{grid-template-columns:repeat(2,1fr)}
+  .list-hdr,.lrow{grid-template-columns:8px 1fr 90px 100px}
+  .list-hdr>*:nth-child(5),.list-hdr>*:nth-child(6),.lrow>*:nth-child(5),.lrow>*:nth-child(6){display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-name">LenaTemplate</div>
+    <div class="sidebar-logo-sub">Etsy Manager</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Menu</div>
+    <div class="nav-item active" onclick="showPage('dash',this)">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="showPage('cal',this)">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+      Kalender Event <span class="nav-count" id="nc-total">0</span>
+    </div>
+    <div class="nav-section" style="margin-top:8px">Filter Cepat</div>
+    <div class="nav-item" onclick="quickFilter('high')">🔥 High Priority <span class="nav-count" id="nc-high">0</span></div>
+    <div class="nav-item" onclick="quickFilter('sport')">⚽ Sport Events</div>
+    <div class="nav-item" onclick="quickFilter('life')">🎂 Life Events</div>
+    <div class="nav-item" onclick="quickFilter('religious')">🕌 Religious</div>
+    <div class="nav-item" onclick="quickFilter('social')">🥂 Social</div>
+    <div class="nav-item" onclick="quickFilter('asian')">🌏 Asian</div>
+  </nav>
+  <div class="sidebar-stats">
+    <div class="s-stat">Total event <b id="ss-total">0</b></div>
+    <div class="s-stat">Sudah upload <b id="ss-done">0</b></div>
+    <div class="s-stat">Draft <b id="ss-draft">0</b></div>
+    <div class="s-stat">Belum dibuat <b id="ss-none">0</b></div>
+  </div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">Dashboard</div>
+    <div class="search-wrap" id="searchWrap" style="display:none">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Cari event..." oninput="doSearch(this.value)">
+    </div>
+    <div class="view-btns" id="viewBtns" style="display:none">
+      <button class="vbtn active" onclick="setCalView('grid',this)">Grid</button>
+      <button class="vbtn" onclick="setCalView('list',this)">List</button>
+    </div>
+  </div>
+  <div class="filter-bar" id="filterBar" style="display:none">
+    <button class="fbtn active" onclick="filterCat('all',this)">Semua</button>
+    <button class="fbtn" onclick="filterCat('us',this)">🇺🇸 US</button>
+    <button class="fbtn" onclick="filterCat('intl',this)">🌍 Internasional</button>
+    <button class="fbtn" onclick="filterCat('sport',this)">⚽ Sport</button>
+    <button class="fbtn" onclick="filterCat('life',this)">🎂 Life Event</button>
+    <button class="fbtn" onclick="filterCat('religious',this)">🕌 Religious</button>
+    <button class="fbtn" onclick="filterCat('seasonal',this)">🍂 Seasonal</button>
+    <button class="fbtn" onclick="filterCat('social',this)">🥂 Social</button>
+    <button class="fbtn" onclick="filterCat('asian',this)">🌏 Asian</button>
+    <button class="fbtn fire" id="highBtn" onclick="toggleHigh(this)">🔥 NOW</button>
+  </div>
+  <div id="dashView">
+    <div class="dash-grid">
+      <div class="dash-card"><div class="dc-label">Total Event</div><div class="dc-value gold" id="d-total">0</div><div class="dc-sub">dalam database</div></div>
+      <div class="dash-card"><div class="dc-label">Upload Sekarang</div><div class="dc-value red" id="d-now">0</div><div class="dc-sub">deadline terlewat</div></div>
+      <div class="dash-card"><div class="dc-label">Sudah Upload</div><div class="dc-value green" id="d-done">0</div><div class="dc-sub">listing live</div></div>
+      <div class="dash-card"><div class="dc-label">Draft</div><div class="dc-value orange" id="d-draft">0</div><div class="dc-sub">perlu diselesaikan</div></div>
+      <div class="dash-card"><div class="dc-label">High Priority</div><div class="dc-value gold" id="d-high">0</div><div class="dc-sub">event prioritas tinggi</div></div>
+      <div class="dash-card"><div class="dc-label">Evergreen</div><div class="dc-value" id="d-ev">0</div><div class="dc-sub">jual 365 hari</div></div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-label"><span>Progress keseluruhan</span><span id="prog-pct">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-bar" style="width:0%"></div></div>
+    </div>
+    <div class="upcoming-list" id="upcomingList"><div class="upcoming-header">⚡ Deadline Terdekat</div></div>
+  </div>
+  <div id="calView" style="display:none"></div>
+  <div id="listView" style="display:none">
+    <div class="list-hdr"><div></div><div>Event</div><div>Tgl Event</div><div>Deadline Upload</div><div>Status</div><div>Target</div></div>
+  </div>
+</main>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="m-name"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="m-sub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-label">Info</div>
+        <div class="modal-chips" id="m-chips"></div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6" id="m-angle"></div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-label">Status Listing</div>
+        <div class="status-select">
+          <button class="ss-btn sel-none" onclick="setModalStatus('none')">⬜ Belum Dibuat</button>
+          <button class="ss-btn sel-draft" onclick="setModalStatus('draft')">✏️ Draft</button>
+          <button class="ss-btn sel-done" onclick="setModalStatus('done')">✅ Uploaded</button>
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-label">Target Listing</div>
+        <div class="target-input"><input type="number" id="m-target" min="0" max="200" value="0"> listing untuk event ini</div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-label">Listing Dibuat</div>
+        <div class="target-input"><input type="number" id="m-made" min="0" max="200" value="0"> listing sudah dibuat</div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-label">Catatan / Ide Template</div>
+        <textarea id="m-notes" placeholder="Catat ide template, angle yang mau dicoba, referensi kompetitor..."></textarea>
+      </div>
+      <button class="modal-save" onclick="saveModal()">Simpan</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const events=[
+// ── EVERGREEN LIFE ──
+{id:'wedding',name:'Wedding Invitation',sub:'Classic, boho, modern, rustic, beach',cat:'life',pri:'high',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Classic elegant, boho floral, modern minimal, rustic barn, beach wedding',month:0,peak:'Puncak: Apr–Jun & Sep–Okt',evergreen:true},
+{id:'birthday',name:'Birthday Party',sub:'Any age, kids & adult',cat:'life',pri:'high',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Kids (dino, unicorn, princess, superhero), milestone 18/21/30/40/50/60, garden, glam',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'babyshower',name:'Baby Shower',sub:'Gender reveal, sprinkle, sip & see',cat:'life',pri:'high',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Boho, floral, gender neutral, pink/blue, jungle, woodland, book themed',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'bridalshower',name:'Bridal Shower',sub:'Bachelorette, hen party',cat:'life',pri:'high',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Brunch, garden party, beach, disco, winery, spa day, coquette, bow',month:0,peak:'Puncak: Apr–Jun',evergreen:true},
+{id:'genderreveal',name:'Gender Reveal Party',sub:'',cat:'life',pri:'high',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Pink or blue, sports theme, floral, balloon pop, confetti, western',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'sweet16',name:'Sweet 16 / Quinceañera',sub:'',cat:'life',pri:'high',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'US/Latin',angle:'Glam, pink, gold, mirror acrylic, princess, floral, butterfly',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'retirement',name:'Retirement Party',sub:'',cat:'life',pri:'med',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Golf theme, travel, garden party, cheers to new chapter, beach',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'anniversary',name:'Anniversary Party',sub:'25th, 50th, vow renewal',cat:'life',pri:'med',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Elegant dinner, garden, vintage, gold/silver, rustic',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'baptism',name:'Baptism / Christening',sub:'',cat:'life',pri:'med',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Soft blue/pink, floral, cross motif, elegant, watercolor',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'communion',name:'First Communion / Confirmation',sub:'',cat:'life',pri:'med',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Catholic',angle:'White gold, religious motif, floral, elegant',month:0,peak:'Puncak: Apr–Mei',evergreen:true},
+{id:'barmitzvah',name:'Bar / Bat Mitzvah',sub:'',cat:'life',pri:'med',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Jewish',angle:'Star of David, blue gold, glam, modern',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'housewarming',name:'Housewarming Party',sub:'',cat:'life',pri:'niche',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Cozy home, boho, modern, welcome to our home',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'divorceparty',name:'Divorce Party',sub:'Liberation / fresh start',cat:'life',pri:'niche',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'US/UK',angle:'Glam freedom, bubbly, sassy, new chapter',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'petbirthday',name:'Pet Birthday / Gotcha Day',sub:'',cat:'life',pri:'niche',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Puppy party, cat, paw print, cute themed, bandana',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'promotion',name:'Promotion / Job Celebration',sub:'',cat:'life',pri:'niche',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Champagne, corporate chic, confetti, career milestone',month:0,peak:'Jual 365 hari',evergreen:true},
+// ── EVERGREEN SOCIAL ──
+{id:'dinnerparty',name:'Dinner Party / Supper Club',sub:'',cat:'social',pri:'high',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Elegant dinner, candlelit, modern, themed cuisine, garden',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'cocktail',name:'Cocktail / Garden Party',sub:'',cat:'social',pri:'high',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Floral garden, bubbly, summer afternoon, elegant, boho',month:0,peak:'Puncak: Apr–Sep',evergreen:true},
+{id:'gno',name:'Girls Night Out / GNO',sub:'',cat:'social',pri:'med',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Glam, sassy, pink, disco, bachelorette lite, coquette',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'gamenight',name:'Game Night / Board Game Party',sub:'',cat:'social',pri:'med',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Retro game, fun colorful, family night, trivia, casino',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'movienight',name:'Movie Night / Screening Party',sub:'',cat:'social',pri:'med',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Cinema, popcorn, drive-in, outdoor movie, Netflix',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'winetasting',name:'Wine / Cheese Tasting Party',sub:'',cat:'social',pri:'med',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Vineyard, rustic, elegant, charcuterie, winery',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'murder',name:'Murder Mystery Party',sub:'',cat:'social',pri:'niche',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'1920s, detective, clue, glamorous dark, vintage',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'paintsip',name:'Paint & Sip Party',sub:'',cat:'social',pri:'niche',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Artsy, wine glass, paintbrush, creative fun, palette',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'karaoke',name:'Karaoke Night',sub:'',cat:'social',pri:'niche',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Microphone, neon, retro, fun bold colors, music',month:0,peak:'Jual 365 hari',evergreen:true},
+{id:'bookclub',name:'Book Club Meeting',sub:'',cat:'social',pri:'niche',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Library, cozy, literary, elegant, reading',month:0,peak:'Jual 365 hari',evergreen:true},
+// ── EVERGREEN SPORT ──
+{id:'f1',name:'Formula 1 Race Day Party',sub:'',cat:'sport',pri:'niche',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'Global',angle:'Racing flags, speed, Monaco, grid party, checkered',month:0,peak:'Puncak: Mei & Nov',evergreen:true},
+{id:'ufc',name:'UFC / Fight Night Party',sub:'',cat:'sport',pri:'niche',eventDate:'Sepanjang tahun',deadlineDate:'Kapan saja',dlp:'ok',market:'US/Global',angle:'Bold, dark, octagon, fight night energy, boxing',month:0,peak:'Jual 365 hari',evergreen:true},
+// ── JUNI 2026 — URGENT NOW ──
+{id:'worldcup26',name:'FIFA World Cup 2026',sub:'Watch party per negara',cat:'sport',pri:'high',eventDate:'Jun–Jul 2026',deadlineDate:'SEKARANG!',dlp:'now',market:'Global',angle:'Country-specific flags, soccer party, watch party, stadium, trophy',month:202606,peak:''},
+{id:'wimbledon26',name:'Wimbledon 2026',sub:'Tennis viewing party',cat:'sport',pri:'high',eventDate:'29 Jun–12 Jul 2026',deadlineDate:'SEKARANG!',dlp:'now',market:'UK/Global',angle:'Garden party, strawberries cream, tennis, British, green purple gingham',month:202606,peak:''},
+{id:'july4th26',name:'4th of July 2026',sub:'Independence Day — 250th Anniversary',cat:'us',pri:'high',eventDate:'4 Jul 2026',deadlineDate:'SEKARANG!',dlp:'now',market:'US',angle:'BBQ, fireworks, red white blue, patriotic, pool party, America 250',month:202606,peak:''},
+// ── JULI 2026 ──
+{id:'usopen26',name:'US Open Tennis 2026',sub:'',cat:'sport',pri:'med',eventDate:'31 Agt–13 Sep 2026',deadlineDate:'Jul 2026',dlp:'urgent',market:'US/Global',angle:'Tennis party, NYC preppy theme, summer sports, hard court',month:202607,peak:''},
+{id:'backtoschool26',name:'Back to School 2026',sub:'Welcome party / teacher gift',cat:'us',pri:'med',eventDate:'Agt 2026',deadlineDate:'Jul 2026',dlp:'urgent',market:'US',angle:'School supplies, apple teacher, first day, classroom, crayons',month:202607,peak:''},
+{id:'commonwealth26',name:'Commonwealth Games 2026',sub:'Glasgow',cat:'sport',pri:'niche',eventDate:'Agt 2026',deadlineDate:'Jul 2026',dlp:'urgent',market:'UK/Global',angle:'Multi-sport party, UK/British theme, union jack',month:202607,peak:''},
+{id:'tourdefrance26',name:'Tour de France 2026',sub:'Cycling viewing party',cat:'sport',pri:'niche',eventDate:'Jul 2026',deadlineDate:'SEKARANG!',dlp:'now',market:'France/Global',angle:'French garden, cycling, yellow jersey, café, baguette',month:202606,peak:''},
+// ── AGUSTUS 2026 ──
+{id:'nfl26',name:'NFL Season Opener 2026',sub:'',cat:'sport',pri:'med',eventDate:'Sep 2026',deadlineDate:'Agt 2026',dlp:'soon',market:'US',angle:'Football tailgate party, game day, team colors, stadium',month:202608,peak:''},
+{id:'laborday26',name:'Labor Day 2026',sub:'End of summer cookout',cat:'us',pri:'med',eventDate:'7 Sep 2026',deadlineDate:'Agt 2026',dlp:'soon',market:'US',angle:'End of summer BBQ, pool party, cookout, farewell summer',month:202608,peak:''},
+// ── SEPTEMBER 2026 ──
+{id:'halloween26',name:'Halloween Party 2026',sub:'Costume, haunted house, kids',cat:'seasonal',pri:'high',eventDate:'31 Okt 2026',deadlineDate:'Sep 2026',dlp:'soon',market:'US/Global',angle:'Adult spooky, cute kids, costume contest, haunted house, witch, vampire',month:202609,peak:''},
+{id:'diwali26',name:'Diwali / Deepavali 2026',sub:'',cat:'religious',pri:'high',eventDate:'Okt/Nov 2026',deadlineDate:'Sep 2026',dlp:'soon',market:'Hindu/SE Asia',angle:'Gold diyas, colorful rangoli, fireworks, warm tones, elephant, lotus',month:202609,peak:''},
+{id:'navratri26',name:'Navratri / Garba Night 2026',sub:'',cat:'religious',pri:'med',eventDate:'Sep/Okt 2026',deadlineDate:'Sep 2026',dlp:'soon',market:'Hindu/Indian',angle:'Traditional garba, dandiya, colorful dress, festive, folk dance',month:202609,peak:''},
+{id:'worldseries26',name:'MLB World Series 2026',sub:'',cat:'sport',pri:'med',eventDate:'Okt 2026',deadlineDate:'Sep 2026',dlp:'soon',market:'US',angle:'Baseball party, fall sports, pennant, stadium, hot dog',month:202609,peak:''},
+{id:'roshhashanah26',name:'Rosh Hashanah / Yom Kippur 2026',sub:'Jewish New Year',cat:'religious',pri:'med',eventDate:'Sep/Okt 2026',deadlineDate:'Sep 2026',dlp:'soon',market:'Jewish',angle:'Apple honey, gold white, new year blessings, pomegranate',month:202609,peak:''},
+// ── OKTOBER 2026 ──
+{id:'thanksgiving26',name:'Thanksgiving / Friendsgiving 2026',sub:'',cat:'us',pri:'high',eventDate:'26 Nov 2026',deadlineDate:'Okt 2026',dlp:'soon',market:'US',angle:'Friendsgiving, rustic harvest, fall leaves, elegant dinner, pumpkin',month:202610,peak:''},
+{id:'dayofdead26',name:'Day of the Dead 2026',sub:'Día de los Muertos',cat:'intl',pri:'niche',eventDate:'1–2 Nov 2026',deadlineDate:'Okt 2026',dlp:'soon',market:'Mexico/Latin',angle:'Calavera, marigold, colorful, sugar skull art, ofrenda',month:202610,peak:''},
+{id:'bonfire26',name:'Bonfire Night / Guy Fawkes 2026',sub:'',cat:'intl',pri:'niche',eventDate:'5 Nov 2026',deadlineDate:'Okt 2026',dlp:'soon',market:'UK',angle:'Fireworks, bonfire, orange warm tones, British, toffee apple',month:202610,peak:''},
+{id:'falloktober26',name:'Fall Harvest Party 2026',sub:'Pumpkin patch, apple picking',cat:'seasonal',pri:'med',eventDate:'Sep–Nov',deadlineDate:'Okt 2026',dlp:'soon',market:'US/Global',angle:'Pumpkin patch, apple picking, autumn leaves, cider, hayride',month:202610,peak:''},
+{id:'loykrathong26',name:'Loy Krathong / Lantern Fest 2026',sub:'',cat:'asian',pri:'med',eventDate:'Nov 2026',deadlineDate:'Okt 2026',dlp:'soon',market:'Thailand/Asia',angle:'Floating lanterns, river, moonlight, warm gold, yi peng',month:202610,peak:''},
+// ── NOVEMBER 2026 ──
+{id:'christmas26',name:'Christmas Party 2026',sub:'Ugly sweater, elegant dinner, kids',cat:'seasonal',pri:'high',eventDate:'25 Des 2026',deadlineDate:'Nov 2026',dlp:'ok',market:'US/Global',angle:'Ugly sweater, elegant dinner, kids, Santa, winter wonderland, elf',month:202611,peak:''},
+{id:'hanukkah26',name:'Hanukkah 2026',sub:'',cat:'religious',pri:'med',eventDate:'Des 2026',deadlineDate:'Nov 2026',dlp:'ok',market:'Jewish',angle:'Blue silver gold, menorah, Star of David, elegant, dreidel',month:202611,peak:''},
+{id:'nye26',name:'New Year\'s Eve Party 2026',sub:'',cat:'social',pri:'high',eventDate:'31 Des 2026',deadlineDate:'Nov 2026',dlp:'ok',market:'Global',angle:'Glam NYE, black gold, rooftop, countdown, champagne, confetti',month:202611,peak:''},
+{id:'winter26',name:'Winter Holiday Party 2026',sub:'',cat:'seasonal',pri:'med',eventDate:'Des 2026',deadlineDate:'Nov 2026',dlp:'ok',market:'Global',angle:'Winter wonderland, snowflake, cozy, hygge vibes, hot cocoa',month:202611,peak:''},
+{id:'cookie26',name:'Cookie Decorating Party 2026',sub:'Christmas baking',cat:'social',pri:'niche',eventDate:'Des 2026',deadlineDate:'Nov 2026',dlp:'ok',market:'Global',angle:'Christmas cookies, cute kids, festive baking, gingerbread',month:202611,peak:''},
+// ── JANUARI 2027 ──
+{id:'newyear27',name:'New Year\'s Day Party 2027',sub:'',cat:'intl',pri:'high',eventDate:'1 Jan 2027',deadlineDate:'Des 2026',dlp:'ok',market:'Global',angle:'Countdown party, champagne, glam, fresh start, resolution',month:202701,peak:''},
+{id:'cny27',name:'Lunar New Year / CNY 2027',sub:'Chinese New Year',cat:'asian',pri:'high',eventDate:'Jan 2027',deadlineDate:'Des 2026',dlp:'ok',market:'East/SE Asia',angle:'Red gold lantern, dragon, floral, prosperity, lion dance',month:202701,peak:''},
+{id:'tet27',name:'Tết (Vietnamese New Year) 2027',sub:'',cat:'asian',pri:'niche',eventDate:'Jan/Feb 2027',deadlineDate:'Des 2026',dlp:'ok',market:'Vietnam/Viet diaspora',angle:'Red gold, peach blossom, lucky charms, festive, ao dai',month:202701,peak:''},
+{id:'australia27',name:'Australia Day 2027',sub:'',cat:'intl',pri:'med',eventDate:'26 Jan 2027',deadlineDate:'Des 2026',dlp:'ok',market:'Australia',angle:'BBQ, beach, Australian flag, summer, kangaroo, vegemite',month:202701,peak:''},
+{id:'diadelosreyes27',name:'Día de los Reyes 2027',sub:'Three Kings Day',cat:'intl',pri:'niche',eventDate:'6 Jan 2027',deadlineDate:'Des 2026',dlp:'ok',market:'Latin/Spain',angle:'Three kings, gold star, festive Latin theme, gifts',month:202701,peak:''},
+// ── FEBRUARI 2027 ──
+{id:'valentine27',name:'Valentine\'s Day 2027',sub:'Galentine\'s, romantic dinner',cat:'seasonal',pri:'high',eventDate:'14 Feb 2027',deadlineDate:'Jan 2027',dlp:'far',market:'Global',angle:'Galentine\'s brunch, romantic dinner, pink floral, coquette, bow',month:202702,peak:''},
+{id:'superbowl27',name:'Super Bowl LXI 2027',sub:'Los Angeles',cat:'sport',pri:'high',eventDate:'14 Feb 2027',deadlineDate:'Jan 2027',dlp:'far',market:'US/Global',angle:'Football tailgate, team colors, game day, chips & dip, touchdown',month:202702,peak:''},
+{id:'mardigras27',name:'Mardi Gras 2027',sub:'',cat:'us',pri:'niche',eventDate:'Feb 2027',deadlineDate:'Jan 2027',dlp:'far',market:'US/Global',angle:'Purple green gold, masquerade, New Orleans, beads, jazz, beignet',month:202702,peak:''},
+{id:'losar27',name:'Losar (Tibetan New Year) 2027',sub:'',cat:'asian',pri:'niche',eventDate:'Feb 2027',deadlineDate:'Jan 2027',dlp:'far',market:'Tibetan/Buddhist',angle:'Prayer flags, lanterns, spiritual celebration, warm tones, thangka',month:202702,peak:''},
+{id:'carnival27',name:'Carnival / Mardi Gras 2027',sub:'',cat:'intl',pri:'med',eventDate:'Feb/Mar 2027',deadlineDate:'Jan 2027',dlp:'far',market:'Global',angle:'Masquerade, purple gold green, feathers, festive, Venice, Brazil',month:202702,peak:''},
+// ── MARET 2027 ──
+{id:'stpatrick27',name:'St. Patrick\'s Day 2027',sub:'',cat:'seasonal',pri:'med',eventDate:'17 Mar 2027',deadlineDate:'Feb 2027',dlp:'far',market:'US/Global',angle:'Irish pub, green gingham, shamrock, beer garden, clover, lucky',month:202703,peak:''},
+{id:'holi27',name:'Holi 2027',sub:'Festival of Colors',cat:'religious',pri:'med',eventDate:'Mar 2027',deadlineDate:'Feb 2027',dlp:'far',market:'Hindu Global',angle:'Colorful powder, vibrant, spring festival, rainbow, gulal, India',month:202703,peak:''},
+{id:'nowruz27',name:'Nowruz (Persian New Year) 2027',sub:'',cat:'religious',pri:'niche',eventDate:'21 Mar 2027',deadlineDate:'Feb 2027',dlp:'far',market:'Persian/Central Asia',angle:'Spring flowers, haft-seen, gold green, floral, sabzeh',month:202703,peak:''},
+{id:'purim27',name:'Purim Party 2027',sub:'',cat:'religious',pri:'niche',eventDate:'Feb/Mar 2027',deadlineDate:'Jan 2027',dlp:'far',market:'Jewish',angle:'Costume party, colorful, hamantaschen, festive, Queen Esther',month:202703,peak:''},
+{id:'eid27',name:'Eid al-Fitr 2027',sub:'End of Ramadan',cat:'religious',pri:'high',eventDate:'Mar/Apr 2027',deadlineDate:'Feb 2027',dlp:'far',market:'Muslim Global',angle:'Gold crescent, pastel floral, open house, lantern, ketupat, baju raya',month:202703,peak:''},
+{id:'hariraya27',name:'Hari Raya Open House 2027',sub:'',cat:'asian',pri:'niche',eventDate:'Mar/Apr 2027',deadlineDate:'Feb 2027',dlp:'far',market:'Malaysia/Indonesia/Singapore',angle:'Ketupat, green gold, malay motif, open house, rendang',month:202703,peak:''},
+{id:'springgarden27',name:'Spring Garden Party 2027',sub:'',cat:'seasonal',pri:'niche',eventDate:'Mar–Mei 2027',deadlineDate:'Feb 2027',dlp:'far',market:'Global',angle:'Floral, pastel, afternoon tea, botanical, butterflies',month:202703,peak:''},
+{id:'marchmadness27',name:'March Madness 2027',sub:'NCAA Basketball',cat:'sport',pri:'med',eventDate:'Mar 2027',deadlineDate:'Feb 2027',dlp:'far',market:'US',angle:'Basketball, bracket party, team colors, court theme, dunk',month:202703,peak:''},
+{id:'passover27',name:'Passover Seder 2027',sub:'',cat:'religious',pri:'med',eventDate:'Mar/Apr 2027',deadlineDate:'Feb 2027',dlp:'far',market:'Jewish',angle:'Blue gold, elegant dinner, traditional motif, seder plate',month:202703,peak:''},
+// ── APRIL 2027 ──
+{id:'easter27',name:'Easter Brunch / Egg Hunt 2027',sub:'',cat:'seasonal',pri:'high',eventDate:'Apr 2027',deadlineDate:'Mar 2027',dlp:'far',market:'Global',angle:'Spring garden, kids egg hunt, pastel floral, brunch, bunny',month:202704,peak:''},
+{id:'masters27',name:'The Masters Golf 2027',sub:'Augusta',cat:'sport',pri:'med',eventDate:'Apr 2027',deadlineDate:'Mar 2027',dlp:'far',market:'US/Global',angle:'Green & white, golf theme, country club, Augusta, azalea, pimento sandwich',month:202704,peak:''},
+{id:'nfldraft27',name:'NFL Draft Party 2027',sub:'',cat:'sport',pri:'med',eventDate:'Apr 2027',deadlineDate:'Mar 2027',dlp:'far',market:'US',angle:'Football, team colors, draft night, sports bar, jersey',month:202704,peak:''},
+{id:'songkran27',name:'Songkran / Thai New Year 2027',sub:'',cat:'asian',pri:'med',eventDate:'13 Apr 2027',deadlineDate:'Mar 2027',dlp:'far',market:'Thailand/SE Asia',angle:'Water festival, tropical, colorful, Thai motif, tuk tuk',month:202704,peak:''},
+// ── MEI 2027 ──
+{id:'kentucky27',name:'Kentucky Derby 2027',sub:'Run for the Roses',cat:'sport',pri:'med',eventDate:'1 Mei 2027',deadlineDate:'Mar 2027',dlp:'far',market:'US/Global',angle:'Pink gingham, hat party, mint julep, horse racing, roses, fascinators',month:202705,peak:''},
+{id:'mothersday27',name:'Mother\'s Day 2027',sub:'Brunch, tea party, spa',cat:'us',pri:'high',eventDate:'9 Mei 2027',deadlineDate:'Apr 2027',dlp:'far',market:'Global',angle:'Garden brunch, floral, spa day, tea party, champagne, roses',month:202705,peak:''},
+{id:'memorialday27',name:'Memorial Day 2027',sub:'Summer kickoff BBQ',cat:'us',pri:'med',eventDate:'25 Mei 2027',deadlineDate:'Apr 2027',dlp:'far',market:'US',angle:'Pool party, BBQ, red white blue, summer kickoff, patriotic',month:202705,peak:''},
+{id:'cinco27',name:'Cinco de Mayo 2027',sub:'',cat:'us',pri:'niche',eventDate:'5 Mei 2027',deadlineDate:'Apr 2027',dlp:'far',market:'US/Mexico',angle:'Fiesta, margarita, taco, colorful, Mexican theme, piñata',month:202705,peak:''},
+{id:'vesak27',name:'Vesak / Buddha Day 2027',sub:'',cat:'religious',pri:'niche',eventDate:'Mei 2027',deadlineDate:'Apr 2027',dlp:'far',market:'Buddhist',angle:'Lotus, lantern, serene gold white, Buddhist motif, bodhi tree',month:202705,peak:''},
+{id:'grad27',name:'Graduation Season 2027',sub:'HS, college, grad school',cat:'life',pri:'high',eventDate:'Mei–Jun 2027',deadlineDate:'Feb 2027',dlp:'far',market:'Global',angle:'Preppy, sport theme, golf, country club, tropical, glam, coquette',month:202705,peak:''},
+// ── JUNI 2027 ──
+{id:'fathersday27',name:'Father\'s Day 2027',sub:'BBQ, golf, fishing',cat:'us',pri:'high',eventDate:'20 Jun 2027',deadlineDate:'Mei 2027',dlp:'far',market:'Global',angle:'BBQ, golf, fishing, beer, sports theme, grill, camping',month:202706,peak:''},
+{id:'eidadhd27',name:'Eid al-Adha 2027',sub:'',cat:'religious',pri:'high',eventDate:'Jun 2027',deadlineDate:'Mei 2027',dlp:'far',market:'Muslim Global',angle:'Gold green, festive, family gathering, open house, floral, qurban',month:202706,peak:''},
+{id:'worldcupw27',name:'FIFA Women\'s World Cup 2027',sub:'Brazil',cat:'sport',pri:'med',eventDate:'Jun–Jul 2027',deadlineDate:'Mei 2027',dlp:'far',market:'Global',angle:'Soccer watch party, tropical theme, country flags, Brazil, women football',month:202706,peak:''},
+{id:'juneteenth27',name:'Juneteenth Celebration 2027',sub:'',cat:'us',pri:'med',eventDate:'19 Jun 2027',deadlineDate:'Mei 2027',dlp:'far',market:'US',angle:'Freedom celebration, red black green, cultural pride, unity',month:202706,peak:''},
+{id:'summerparty27',name:'Summer Pool Party 2027',sub:'',cat:'seasonal',pri:'med',eventDate:'Jun–Agt 2027',deadlineDate:'Mei 2027',dlp:'far',market:'Global',angle:'Tropical, flamingo, neon, retro summer, beach vibes, inflatable',month:202706,peak:''},
+// ── JULI 2027 ──
+{id:'wimbledon27',name:'Wimbledon 2027',sub:'Tennis viewing party',cat:'sport',pri:'med',eventDate:'Jun–Jul 2027',deadlineDate:'Jun 2027',dlp:'far',market:'UK/Global',angle:'Garden party, strawberries cream, tennis, British, gingham',month:202707,peak:''},
+{id:'july4th27',name:'4th of July 2027',sub:'',cat:'us',pri:'high',eventDate:'4 Jul 2027',deadlineDate:'Jun 2027',dlp:'far',market:'US',angle:'BBQ, fireworks, red white blue, patriotic, pool party, American pride',month:202707,peak:''},
+{id:'canada27',name:'Canada Day 2027',sub:'',cat:'intl',pri:'med',eventDate:'1 Jul 2027',deadlineDate:'Jun 2027',dlp:'far',market:'Canada',angle:'Red white maple leaf, BBQ, fireworks, hockey, moose',month:202707,peak:''},
+{id:'bastille27',name:'Bastille Day Party 2027',sub:'French National Day',cat:'intl',pri:'niche',eventDate:'14 Jul 2027',deadlineDate:'Jun 2027',dlp:'far',market:'French/Global',angle:'Eiffel Tower, blue white red, croissant, French garden, beret',month:202707,peak:''},
+{id:'obon27',name:'Obon / Tanabata 2027',sub:'Japanese festivals',cat:'asian',pri:'niche',eventDate:'Jul–Agt 2027',deadlineDate:'Jun 2027',dlp:'far',market:'Japan/Japanese diaspora',angle:'Lantern, yukata, star festival, Japanese motif, wish strips',month:202707,peak:''},
+// ── AGUSTUS 2027 ──
+{id:'backtoschool27',name:'Back to School 2027',sub:'Welcome party / teacher',cat:'us',pri:'med',eventDate:'Agt 2027',deadlineDate:'Jul 2027',dlp:'far',market:'US',angle:'School supplies, apple teacher, first day, classroom, pencil',month:202708,peak:''},
+{id:'rugby27',name:'Rugby World Cup 2027',sub:'Australia',cat:'sport',pri:'niche',eventDate:'Sep–Nov 2027',deadlineDate:'Agt 2027',dlp:'far',market:'UK/Aus/Global',angle:'Rugby party, Aussie theme, union jack, scrum, tries',month:202708,peak:''},
+// ── SEPTEMBER 2027 ──
+{id:'laborday27',name:'Labor Day 2027',sub:'',cat:'us',pri:'med',eventDate:'7 Sep 2027',deadlineDate:'Agt 2027',dlp:'far',market:'US',angle:'End of summer BBQ, pool party, cookout, grill',month:202709,peak:''},
+{id:'oktoberfest27',name:'Oktoberfest 2027',sub:'',cat:'intl',pri:'med',eventDate:'Sep–Okt 2027',deadlineDate:'Agt 2027',dlp:'far',market:'German/Global',angle:'Beer stein, pretzel, checkered, Bavarian, lederhosen, accordion',month:202709,peak:''},
+{id:'roshhashanah27',name:'Rosh Hashanah / Yom Kippur 2027',sub:'',cat:'religious',pri:'med',eventDate:'Sep/Okt 2027',deadlineDate:'Agt 2027',dlp:'far',market:'Jewish',angle:'Apple honey, gold white, new year blessings, pomegranate',month:202709,peak:''},
+{id:'chuseok27',name:'Chuseok (Korean Harvest) 2027',sub:'',cat:'asian',pri:'med',eventDate:'Sep/Okt 2027',deadlineDate:'Agt 2027',dlp:'far',market:'Korea/Korean diaspora',angle:'Hanbok, harvest moon, traditional motif, warm tones, songpyeon',month:202709,peak:''},
+// ── OKTOBER 2027 ──
+{id:'halloween27',name:'Halloween 2027',sub:'Costume, haunted house',cat:'seasonal',pri:'high',eventDate:'31 Okt 2027',deadlineDate:'Sep 2027',dlp:'far',market:'US/Global',angle:'Adult spooky, cute kids, costume contest, witch, vampire, skeleton',month:202710,peak:''},
+{id:'diwali27',name:'Diwali 2027',sub:'',cat:'religious',pri:'high',eventDate:'Okt/Nov 2027',deadlineDate:'Sep 2027',dlp:'far',market:'Hindu/SE Asia',angle:'Gold diyas, colorful rangoli, fireworks, warm tones, lotus',month:202710,peak:''},
+{id:'loykrathong27',name:'Loy Krathong / Lantern Fest 2027',sub:'',cat:'asian',pri:'med',eventDate:'Nov 2027',deadlineDate:'Okt 2027',dlp:'far',market:'Thailand/Asia',angle:'Floating lanterns, river, moonlight, warm gold, yi peng',month:202710,peak:''},
+{id:'worldseries27',name:'MLB World Series 2027',sub:'',cat:'sport',pri:'med',eventDate:'Okt 2027',deadlineDate:'Sep 2027',dlp:'far',market:'US',angle:'Baseball party, fall sports theme, pennant, stadium',month:202710,peak:''},
+// ── NOVEMBER 2027 ──
+{id:'thanksgiving27',name:'Thanksgiving / Friendsgiving 2027',sub:'',cat:'us',pri:'high',eventDate:'Nov 2027',deadlineDate:'Okt 2027',dlp:'far',market:'US',angle:'Friendsgiving, rustic harvest, fall leaves, elegant dinner, pumpkin',month:202711,peak:''},
+{id:'dayofdead27',name:'Day of the Dead 2027',sub:'',cat:'intl',pri:'niche',eventDate:'1–2 Nov 2027',deadlineDate:'Okt 2027',dlp:'far',market:'Mexico/Latin',angle:'Calavera, marigold, colorful, sugar skull, ofrenda',month:202711,peak:''},
+{id:'bonfire27',name:'Bonfire Night / Guy Fawkes 2027',sub:'',cat:'intl',pri:'niche',eventDate:'5 Nov 2027',deadlineDate:'Okt 2027',dlp:'far',market:'UK',angle:'Fireworks, bonfire, orange warm tones, British',month:202711,peak:''},
+// ── DESEMBER 2027 ──
+{id:'christmas27',name:'Christmas Party 2027',sub:'Ugly sweater, elegant, kids',cat:'seasonal',pri:'high',eventDate:'25 Des 2027',deadlineDate:'Nov 2027',dlp:'far',market:'US/Global',angle:'Ugly sweater, elegant dinner, Santa, winter wonderland, nutcracker',month:202712,peak:''},
+{id:'hanukkah27',name:'Hanukkah 2027',sub:'',cat:'religious',pri:'med',eventDate:'Des 2027',deadlineDate:'Nov 2027',dlp:'far',market:'Jewish',angle:'Blue silver gold, menorah, Star of David, elegant, dreidel',month:202712,peak:''},
+{id:'nye27',name:'New Year\'s Eve Party 2027',sub:'',cat:'social',pri:'high',eventDate:'31 Des 2027',deadlineDate:'Nov 2027',dlp:'far',market:'Global',angle:'Glam NYE, black gold, rooftop, countdown, champagne, confetti',month:202712,peak:''},
+// ── OLYMPICS 2028 ──
+{id:'olympics28',name:'Olympics 2028',sub:'LA Summer Olympics',cat:'sport',pri:'high',eventDate:'Jul–Agt 2028',deadlineDate:'Jun 2028',dlp:'far',market:'Global',angle:'Gold medal, rings, patriotic, multi-sport theme, torch, world flags',month:0,peak:'Puncak: Jun–Agt 2028',evergreen:true},
+];
+
+// ── STATE ──
+let userData=JSON.parse(localStorage.getItem('lena_etsy_v2')||'{}');
+let currentCat='all',currentSearch='',highOnly=false,currentCalView='grid',currentPage='dash';
+const catColors={us:'var(--cat-us)',intl:'var(--cat-intl)',sport:'var(--cat-sport)',life:'var(--cat-life)',religious:'var(--cat-religious)',seasonal:'var(--cat-seasonal)',social:'var(--cat-social)',asian:'var(--cat-asian)'};
+const dlChip={now:'chip-now',urgent:'chip-urgent',soon:'chip-soon',ok:'chip-ok',far:'chip-far'};
+const dlBadge={now:'pb-now',urgent:'pb-urgent',soon:'pb-soon',ok:'pb-ok',far:'pb-far'};
+const dlCard={now:'dl-now',urgent:'dl-urgent',soon:'dl-soon',ok:'dl-ok',far:'dl-far'};
+const priLabel={now:'NOW!',urgent:'URGENT',soon:'Soon',ok:'Aman',far:'Persiapan'};
+const monthNames={0:'Evergreen',202606:'Juni 2026',202607:'Juli 2026',202608:'Agustus 2026',202609:'September 2026',202610:'Oktober 2026',202611:'November 2026',202612:'Desember 2026',202701:'Januari 2027',202702:'Februari 2027',202703:'Maret 2027',202704:'April 2027',202705:'Mei 2027',202706:'Juni 2027',202707:'Juli 2027',202708:'Agustus 2027',202709:'September 2027',202710:'Oktober 2027',202711:'November 2027',202712:'Desember 2027'};
+const peakLabel={0:'⭐ Evergreen — jual 365 hari',202606:'🚨 Deadline SEKARANG',202607:'⚡ Deadline Juli — upload segera',202608:'⚠️ Deadline Agustus',202609:'📅 Deadline September',202610:'📅 Deadline Oktober',202611:'📅 Deadline November',202612:'📅 Deadline Desember'};
+
+function getUD(id){return userData[id]||{status:'none',target:0,made:0,notes:''}}
+function saveUD(id,data){userData[id]=data;localStorage.setItem('lena_etsy_v2',JSON.stringify(userData));updateStats()}
+
+function updateStats(){
+  let done=0,draft=0,none=0;
+  events.forEach(e=>{const d=getUD(e.id);if(d.status==='done')done++;else if(d.status==='draft')draft++;else none++;});
+  const total=events.length;
+  const high=events.filter(e=>e.pri==='high').length;
+  const ev=events.filter(e=>e.evergreen).length;
+  const now=events.filter(e=>e.dlp==='now').length;
+  document.getElementById('ss-total').textContent=total;
+  document.getElementById('ss-done').textContent=done;
+  document.getElementById('ss-draft').textContent=draft;
+  document.getElementById('ss-none').textContent=none;
+  document.getElementById('nc-total').textContent=total;
+  document.getElementById('nc-high').textContent=high;
+  document.getElementById('d-total').textContent=total;
+  document.getElementById('d-now').textContent=now;
+  document.getElementById('d-done').textContent=done;
+  document.getElementById('d-draft').textContent=draft;
+  document.getElementById('d-high').textContent=high;
+  document.getElementById('d-ev').textContent=ev;
+  const pct=Math.round(done/total*100);
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-bar').style.width=pct+'%';
+  // refresh card status buttons
+  document.querySelectorAll('[data-event-id]').forEach(el=>{
+    const d=getUD(el.dataset.eventId);
+    const sb=el.querySelector('.status-btn');
+    if(sb){sb.className='status-btn status-'+d.status;sb.textContent=d.status==='done'?'✅ Uploaded':d.status==='draft'?'✏️ Draft':'⬜ Belum';}
+  });
+}
+
+function buildDashboard(){
+  const order=['now','urgent','soon','ok','far'];
+  const upcoming=events.filter(e=>['now','urgent','soon'].includes(e.dlp)).sort((a,b)=>order.indexOf(a.dlp)-order.indexOf(b.dlp)).slice(0,15);
+  const ul=document.getElementById('upcomingList');
+  ul.innerHTML='<div class="upcoming-header">⚡ Deadline Terdekat (perlu action segera)</div>';
+  upcoming.forEach(e=>{
+    const dlL={now:'SEKARANG!',urgent:'Urgent',soon:'Soon'}[e.dlp];
+    const row=document.createElement('div');
+    row.className='upcoming-row';
+    row.onclick=()=>openModal(e.id);
+    row.innerHTML=`<div class="upcoming-dot" style="background:${catColors[e.cat]}"></div><div><div class="upcoming-name">${e.name}</div><div class="upcoming-date">${e.sub||e.market}</div></div><div class="upcoming-date">${e.eventDate}</div><span class="upcoming-dl dl-${e.dlp}">${dlL}</span>`;
+    ul.appendChild(row);
+  });
+}
+
+function buildCalendar(){
+  const months={};
+  events.forEach(e=>{if(!months[e.month])months[e.month]=[];months[e.month].push(e);});
+  const cv=document.getElementById('calView');cv.innerHTML='';
+  Object.keys(months).sort((a,b)=>Number(a)-Number(b)).forEach(mk=>{
+    const mevs=months[mk];
+    const block=document.createElement('div');
+    block.className='month-block';block.dataset.month=mk;
+    const pl=peakLabel[Number(mk)]||'';
+    block.innerHTML=`<div class="month-hdr"><span class="month-name">${monthNames[mk]||mk}</span>${pl?`<span class="month-peak">${pl}</span>`:''}<div class="month-line"></div><span class="month-count" id="mc-${mk}">${mevs.length}</span></div><div class="events-grid" id="grid-${mk}"></div>`;
+    cv.appendChild(block);
+    const grid=block.querySelector(`#grid-${mk}`);
+    mevs.forEach(e=>{
+      const d=getUD(e.id);
+      const card=document.createElement('div');
+      card.className=`ecard ${dlCard[e.dlp]||'dl-far'}`;
+      card.dataset.cat=e.cat;card.dataset.pri=e.pri;card.dataset.eventId=e.id;
+      const pl2=priLabel[e.dlp]||'';
+      card.innerHTML=`
+        <div class="ecard-top">
+          <div><div class="ecard-name">${e.name}</div>${e.sub?`<div class="ecard-sub">${e.sub}</div>`:''}</div>
+          <div class="ecard-badges"><div class="cat-dot" style="background:${catColors[e.cat]}"></div>${pl2?`<span class="pri-badge ${dlBadge[e.dlp]||'pb-far'}">${pl2}</span>`:''}</div>
+        </div>
+        <div class="ecard-dates">
+          <span class="date-chip chip-event">📅 ${e.eventDate}</span>
+          <span class="date-chip chip-dl ${dlChip[e.dlp]||'chip-far'}">🚀 ${e.deadlineDate}</span>
+        </div>
+        <div class="ecard-angle">${e.angle}</div>
+        ${e.peak?`<div style="font-size:10px;color:var(--accent);margin-bottom:6px">⭐ ${e.peak}</div>`:''}
+        <div class="ecard-footer">
+          <div class="listing-count"><input type="number" min="0" value="${d.made||0}" onclick="event.stopPropagation()" onchange="quickSaveMade('${e.id}',this.value)"> / <span>${d.target||'?'}</span> listing</div>
+          <button class="status-btn status-${d.status}" onclick="event.stopPropagation();cycleStatus('${e.id}',this)">${d.status==='done'?'✅ Uploaded':d.status==='draft'?'✏️ Draft':'⬜ Belum'}</button>
+        </div>`;
+      card.addEventListener('click',()=>openModal(e.id));
+      grid.appendChild(card);
+    });
+  });
+}
+
+function buildList(){
+  const months={};
+  events.forEach(e=>{if(!months[e.month])months[e.month]=[];months[e.month].push(e);});
+  const lv=document.getElementById('listView');
+  lv.innerHTML=`<div class="list-hdr"><div></div><div>Event</div><div>Tgl Event</div><div>Deadline Upload</div><div>Status</div><div>Target</div></div>`;
+  Object.keys(months).sort((a,b)=>Number(a)-Number(b)).forEach(mk=>{
+    const sec=document.createElement('div');sec.dataset.month=mk;
+    const pl=peakLabel[Number(mk)]||'';
+    sec.innerHTML=`<div class="list-section-hdr">${monthNames[mk]||mk}${pl?`<span style="font-family:'DM Sans';font-size:11px;color:var(--accent);font-weight:400">${pl}</span>`:''}</div>`;
+    lv.appendChild(sec);
+    months[mk].forEach(e=>{
+      const d=getUD(e.id);
+      const row=document.createElement('div');
+      row.className='lrow';row.dataset.cat=e.cat;row.dataset.pri=e.pri;row.dataset.eventId=e.id;
+      const sc=d.status==='done'?'color:var(--c-ok);border-color:var(--c-ok);background:var(--c-ok-bg)':d.status==='draft'?'color:var(--c-soon);border-color:var(--c-soon);background:var(--c-soon-bg)':'color:var(--muted);border-color:var(--border2)';
+      const sl=d.status==='done'?'✅ Uploaded':d.status==='draft'?'✏️ Draft':'⬜ Belum';
+      const dlc={now:'color:var(--c-now)',urgent:'color:var(--c-urgent)',soon:'color:var(--c-soon)',ok:'color:var(--muted)',far:'color:var(--c-far)'}[e.dlp]||'';
+      row.innerHTML=`<div><div class="lrow-dot" style="background:${catColors[e.cat]}"></div></div><div><div class="lrow-name">${e.name}</div>${e.sub?`<div class="lrow-sub">${e.sub}</div>`:''}</div><div class="lrow-date">${e.eventDate}</div><div class="lrow-date" style="${dlc}">${e.deadlineDate}</div><div><span class="lrow-status" style="${sc}">${sl}</span></div><div class="lrow-date">${d.target||0} target</div>`;
+      row.addEventListener('click',()=>openModal(e.id));
+      sec.appendChild(row);
+    });
+  });
+}
+
+function applyFilters(){
+  const q=currentSearch.toLowerCase();
+  ['ecard','lrow'].forEach(cls=>{
+    document.querySelectorAll('.'+cls).forEach(el=>{
+      const e=events.find(x=>x.id===el.dataset.eventId);if(!e)return;
+      const ok=(currentCat==='all'||e.cat===currentCat)&&(!highOnly||e.pri==='high')&&(!q||(e.name+e.sub+e.angle+e.market).toLowerCase().includes(q));
+      el.classList.toggle('hidden',!ok);
+    });
+  });
+  document.querySelectorAll('.month-block').forEach(b=>{
+    const mk=b.dataset.month;const grid=b.querySelector(`#grid-${mk}`);if(!grid)return;
+    const v=grid.querySelectorAll('.ecard:not(.hidden)').length;b.style.display=v===0?'none':'';
+    const mc=document.getElementById('mc-'+mk);if(mc)mc.textContent=v;
+  });
+  document.querySelectorAll('#listView>div[data-month]').forEach(s=>{
+    s.style.display=s.querySelectorAll('.lrow:not(.hidden)').length===0?'none':'';
+  });
+}
+
+function filterCat(cat,btn){
+  highOnly=false;document.getElementById('highBtn').classList.remove('active');
+  currentCat=cat;
+  document.querySelectorAll('.fbtn:not(.fire)').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');applyFilters();
+}
+function toggleHigh(btn){highOnly=!highOnly;btn.classList.toggle('active',highOnly);applyFilters();}
+function doSearch(v){currentSearch=v;applyFilters();}
+function quickFilter(cat){
+  showPage('cal',document.querySelectorAll('.nav-item')[1]);
+  if(cat==='high'){highOnly=true;currentCat='all';document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));document.getElementById('highBtn').classList.add('active');}
+  else{highOnly=false;currentCat=cat;document.querySelectorAll('.fbtn').forEach(b=>{b.classList.remove('active');if(b.textContent.toLowerCase().includes(cat)||b.dataset.cat===cat)b.classList.add('active');});}
+  applyFilters();
+}
+
+function showPage(page,btn){
+  currentPage=page;
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  ['dashView','calView','listView'].forEach(id=>document.getElementById(id).style.display='none');
+  const isCal=page==='cal';
+  document.getElementById('filterBar').style.display=isCal?'flex':'none';
+  document.getElementById('searchWrap').style.display=isCal?'block':'none';
+  document.getElementById('viewBtns').style.display=isCal?'flex':'none';
+  document.getElementById('page-title').textContent={dash:'Dashboard',cal:'Kalender Event'}[page]||'';
+  if(page==='dash'){document.getElementById('dashView').style.display='block';buildDashboard();}
+  else if(page==='cal'){document.getElementById(currentCalView==='grid'?'calView':'listView').style.display='block';}
+}
+
+function setCalView(v,btn){
+  currentCalView=v;
+  document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('calView').style.display=v==='grid'?'block':'none';
+  document.getElementById('listView').style.display=v==='list'?'block':'none';
+}
+
+// MODAL
+let modalId=null;
+function openModal(id){
+  const e=events.find(x=>x.id===id);if(!e)return;
+  const d=getUD(id);modalId=id;
+  document.getElementById('m-name').textContent=e.name;
+  document.getElementById('m-sub').textContent=e.sub||'';
+  document.getElementById('m-angle').textContent='💡 Template angle: '+e.angle;
+  document.getElementById('m-chips').innerHTML=`<span class="date-chip chip-event">📅 ${e.eventDate}</span><span class="date-chip chip-dl ${dlChip[e.dlp]||'chip-far'}">🚀 ${e.deadlineDate}</span><span class="date-chip chip-event">🌏 ${e.market}</span>`;
+  document.getElementById('m-notes').value=d.notes||'';
+  document.getElementById('m-target').value=d.target||0;
+  document.getElementById('m-made').value=d.made||0;
+  ['none','draft','done'].forEach(s=>document.querySelector('.ss-btn.sel-'+s).classList.toggle('active',d.status===s||(s==='none'&&!d.status)));
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');modalId=null;}
+function closeModalOutside(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
+function setModalStatus(s){['none','draft','done'].forEach(x=>document.querySelector('.ss-btn.sel-'+x).classList.remove('active'));document.querySelector('.ss-btn.sel-'+s).classList.add('active');}
+function saveModal(){
+  if(!modalId)return;
+  const status=Array.from(document.querySelectorAll('.ss-btn.active'))[0]?.classList[1]?.replace('sel-','')||'none';
+  saveUD(modalId,{status,target:parseInt(document.getElementById('m-target').value)||0,made:parseInt(document.getElementById('m-made').value)||0,notes:document.getElementById('m-notes').value});
+  buildCalendar();buildList();applyFilters();closeModal();showToast('Tersimpan ✓');
+}
+function cycleStatus(id,btn){
+  const d=getUD(id);const order=['none','draft','done'];const next=order[(order.indexOf(d.status||'none')+1)%3];
+  saveUD(id,{...d,status:next});btn.className='status-btn status-'+next;
+  btn.textContent=next==='done'?'✅ Uploaded':next==='draft'?'✏️ Draft':'⬜ Belum';showToast('Status diupdate ✓');
+}
+function quickSaveMade(id,val){saveUD(id,{...getUD(id),made:parseInt(val)||0});}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+
+// INIT
+buildCalendar();buildList();updateStats();buildDashboard();
+</script>
+</body>
+</html>
