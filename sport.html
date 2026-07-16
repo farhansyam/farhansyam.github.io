@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LevramStudio — Sports Prompt Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1220;
+    --surface:#121B30;
+    --surface-2:#182240;
+    --border:rgba(255,255,255,0.08);
+    --border-strong:rgba(255,255,255,0.16);
+    --text-primary:#F2F5FA;
+    --text-secondary:#93A0B8;
+    --text-muted:#5E6B85;
+    --accent:#F0B429;
+    --accent-dim:#8A6620;
+    --dark-tag-bg:#26325A;
+    --dark-tag-text:#B9C4E8;
+    --light-tag-bg:#3A331A;
+    --light-tag-text:#F0CD73;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text-primary);
+    font-family:'Inter',sans-serif;
+    padding:2.5rem 1.5rem 4rem;
+  }
+  .wrap{max-width:1080px;margin:0 auto;}
+
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+    font-size:clamp(28px,4vw,42px);
+    margin:0 0 8px;
+    line-height:1.05;
+  }
+  .sub{
+    color:var(--text-secondary);
+    font-size:14.5px;
+    line-height:1.6;
+    max-width:680px;
+    margin:0 0 32px;
+  }
+
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:22px 24px;
+    margin-bottom:28px;
+  }
+  .panel-title{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    text-transform:uppercase;
+    font-size:13px;
+    letter-spacing:0.08em;
+    color:var(--text-secondary);
+    margin:0 0 18px;
+  }
+  .controls{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px;
+  }
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--text-secondary);
+    margin-bottom:6px;
+    font-weight:500;
+  }
+  select, input[type=text]{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border-strong);
+    color:var(--text-primary);
+    padding:10px 12px;
+    border-radius:8px;
+    font-size:14px;
+    font-family:'Inter',sans-serif;
+  }
+  select:focus, input:focus{
+    outline:2px solid var(--accent);
+    outline-offset:1px;
+  }
+
+  .stats{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:18px 0 0;
+  }
+  .stat-chip{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-secondary);
+  }
+  .stat-chip b{color:var(--text-primary);}
+
+  .actions{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+  button.primary{
+    background:var(--accent);
+    color:#241a04;
+    border:none;
+    font-weight:600;
+    font-size:13.5px;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  button.primary:hover{filter:brightness(1.08);}
+  button.ghost{
+    background:transparent;
+    color:var(--text-secondary);
+    border:1px solid var(--border-strong);
+    font-size:13.5px;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  button.ghost:hover{color:var(--text-primary);border-color:var(--text-secondary);}
+
+  .groupby-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+  }
+  .groupby-label{
+    font-size:12.5px;
+    color:var(--text-secondary);
+  }
+  .groupby-toggle{
+    display:flex;
+    background:var(--surface-2);
+    border:1px solid var(--border-strong);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .groupby-btn{
+    background:transparent;
+    border:none;
+    color:var(--text-secondary);
+    font-size:12.5px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .groupby-btn.active{
+    background:var(--accent);
+    color:#241a04;
+    font-weight:600;
+  }
+
+  .row-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 18px;
+    margin-bottom:12px;
+    display:grid;
+    grid-template-columns:36px 1fr auto;
+    gap:14px;
+    align-items:start;
+  }
+  .row-no{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--text-muted);
+    font-size:13px;
+    padding-top:3px;
+  }
+  .row-main{min-width:0;}
+  .row-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .row-title{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+  }
+  .badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    padding:3px 9px;
+    border-radius:5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  .badge.size{background:var(--surface-2);color:var(--text-secondary);border:1px solid var(--border);}
+  .badge.mode-dark{background:var(--dark-tag-bg);color:var(--dark-tag-text);}
+  .badge.mode-light{background:var(--light-tag-bg);color:var(--light-tag-text);}
+  .prompt-text{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.2px;
+    line-height:1.6;
+    color:var(--text-secondary);
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 12px;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .row-copy{
+    display:flex;
+    align-items:flex-start;
+    padding-top:2px;
+  }
+  .copy-btn{
+    background:var(--surface-2);
+    border:1px solid var(--border-strong);
+    color:var(--text-secondary);
+    font-size:12px;
+    padding:8px 12px;
+    border-radius:7px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    white-space:nowrap;
+  }
+  .copy-btn:hover{color:var(--text-primary);border-color:var(--accent);}
+  .copy-btn.copied-done{
+    background:var(--accent);
+    color:#241a04;
+    border-color:var(--accent);
+    font-weight:600;
+  }
+  .copy-btn.copied-done:hover{color:#241a04;}
+
+  .group-block{margin-bottom:26px;}
+  .group-block-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--border);
+  }
+  .group-block-title{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    font-size:17px;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+  }
+  .group-block-count{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--text-muted);
+  }
+
+  footer{
+    margin-top:32px;
+    color:var(--text-muted);
+    font-size:12.5px;
+    line-height:1.7;
+    border-top:1px solid var(--border);
+    padding-top:18px;
+  }
+
+  .flying-stats{
+    position:fixed;
+    bottom:18px;
+    right:18px;
+    width:280px;
+    background:var(--surface);
+    border:1px solid var(--border-strong);
+    border-radius:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+    padding:14px 16px;
+    z-index:1000;
+    font-family:'Inter',sans-serif;
+  }
+  .fs-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .fs-total{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+  }
+  .fs-total b{color:var(--accent);}
+  .fs-toggle{
+    background:transparent;
+    border:none;
+    color:var(--text-secondary);
+    font-size:11px;
+    cursor:pointer;
+    font-family:'JetBrains Mono',monospace;
+    padding:2px 6px;
+  }
+  .fs-toggle:hover{color:var(--text-primary);}
+  .fs-row-label{
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--text-muted);
+    margin:8px 0 4px;
+  }
+  .fs-sizes{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-bottom:4px;
+  }
+  .fs-chip{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    padding:4px 8px;
+    border-radius:6px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-secondary);
+  }
+  .fs-chip.dark-chip{background:var(--dark-tag-bg);color:var(--dark-tag-text);border-color:transparent;}
+  .fs-chip.light-chip{background:var(--light-tag-bg);color:var(--light-tag-text);border-color:transparent;}
+  .fs-bar-track{
+    height:5px;
+    border-radius:3px;
+    background:var(--surface-2);
+    overflow:hidden;
+    margin:8px 0 4px;
+  }
+  .fs-bar-fill{
+    height:100%;
+    background:var(--accent);
+    transition:width 0.2s ease;
+  }
+  .fs-detail{
+    max-height:220px;
+    overflow-y:auto;
+    border-top:1px solid var(--border);
+    padding-top:8px;
+    margin-top:6px;
+  }
+  .fs-detail-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:11.5px;
+    color:var(--text-secondary);
+    padding:3px 0;
+  }
+  .fs-detail-row b{color:var(--text-primary);font-weight:500;}
+  .fs-reset{
+    width:100%;
+    margin-top:10px;
+    background:transparent;
+    border:1px solid var(--border-strong);
+    color:var(--text-muted);
+    font-size:11px;
+    padding:6px;
+    border-radius:6px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .fs-reset:hover{color:var(--text-secondary);border-color:var(--text-secondary);}
+
+  @media (max-width:560px){
+    .row-card{grid-template-columns:1fr;}
+    .row-no{display:none;}
+    .flying-stats{width:calc(100% - 36px);right:18px;left:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">LevramStudio &mdash; Production Tool</p>
+  <h1>Sports Prompt Generator</h1>
+  <p class="sub">Pilih sport dan warna aksen. Tiap kategori otomatis kebagi ke 3 ukuran (Square/Portrait/Story) secara proporsional, dan Dark/Light diacak per generate tapi totalnya tetap 50:50. Pose, ekspresi, dan penempatan teks dibebasin ke ChatGPT — cuma zona posisi model yang dikunci gantian biar hasilnya beneran variatif.</p>
+
+  <div class="panel">
+    <p class="panel-title">Pengaturan</p>
+    <div class="controls">
+      <div class="field">
+        <label for="sportSel">Sport</label>
+        <select id="sportSel"></select>
+      </div>
+      <div class="field">
+        <label for="colorSel">Warna aksen</label>
+        <select id="colorSel"></select>
+      </div>
+      <div class="field">
+        <label for="genderSel">Gender atlet</label>
+        <select id="genderSel">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="teamInput">Team name (opsional)</label>
+        <input type="text" id="teamInput" placeholder="contoh: LEVRAM">
+      </div>
+    </div>
+    <div class="stats" id="statsRow"></div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" id="copyAllBtn">Copy semua 85 prompt</button>
+    <button class="ghost" id="reshuffleBtn">Acak ulang Dark/Light</button>
+    <button class="ghost" id="scrollTop">Ke atas</button>
+  </div>
+
+  <div class="groupby-row">
+    <span class="groupby-label">Kelompokkan berdasarkan:</span>
+    <div class="groupby-toggle">
+      <button class="groupby-btn active" id="groupByCat">Kategori</button>
+      <button class="groupby-btn" id="groupBySize">Ukuran</button>
+    </div>
+  </div>
+
+  <div id="tableWrap"></div>
+
+  <footer id="footerNote"></footer>
+
+</div>
+
+<div class="flying-stats" id="flyingStats">
+  <div class="fs-header">
+    <span class="fs-total" id="fsTotal">0 / 85 copied</span>
+    <button class="fs-toggle" id="fsToggle">Detail ▾</button>
+  </div>
+  <div class="fs-bar-track"><div class="fs-bar-fill" id="fsBarFill" style="width:0%"></div></div>
+  <div class="fs-row-label">Per ukuran</div>
+  <div class="fs-sizes" id="fsSizes"></div>
+  <div class="fs-row-label">Dark / Light</div>
+  <div class="fs-sizes" id="fsDarkLight"></div>
+  <div id="fsDetail" class="fs-detail" style="display:none"></div>
+  <button class="fs-reset" id="fsReset">Reset progress copy</button>
+</div>
+
+<script>
+const SPORTS = [
+  {name:"Soccer", kit:"soccer kit and cleats", setting:"stadium", type:"Tim"},
+  {name:"Basketball", kit:"basketball jersey and shorts", setting:"indoor basketball court", type:"Tim"},
+  {name:"American Football", kit:"football uniform, helmet and pads", setting:"football field stadium", type:"Tim"},
+  {name:"Baseball", kit:"baseball uniform and cap", setting:"baseball diamond field", type:"Tim"},
+  {name:"Softball", kit:"softball uniform and cap", setting:"softball diamond field", type:"Tim"},
+  {name:"Volleyball", kit:"volleyball jersey and knee pads", setting:"indoor volleyball court", type:"Tim"},
+  {name:"Track and Field", kit:"running singlet and track spikes", setting:"running track", type:"Individual"},
+  {name:"Cross Country", kit:"running shorts and singlet", setting:"outdoor trail course", type:"Individual"},
+  {name:"Swimming", kit:"competitive swimsuit, cap and goggles", setting:"indoor swimming pool", type:"Individual"},
+  {name:"Tennis", kit:"tennis polo and shorts with racket", setting:"outdoor tennis court", type:"Individual"},
+  {name:"Golf", kit:"golf polo and cap with golf club", setting:"outdoor golf course", type:"Individual"},
+  {name:"Ice Hockey", kit:"ice hockey jersey and pads", setting:"indoor ice rink", type:"Tim"},
+  {name:"Field Hockey", kit:"field hockey jersey and shin guards", setting:"outdoor turf field", type:"Tim"},
+  {name:"Lacrosse", kit:"lacrosse jersey, helmet and stick", setting:"outdoor lacrosse field", type:"Tim"},
+  {name:"Rugby", kit:"rugby jersey and shorts", setting:"outdoor rugby field", type:"Tim"},
+  {name:"Wrestling", kit:"wrestling singlet", setting:"wrestling mat gymnasium", type:"Individual"},
+  {name:"Gymnastics", kit:"gymnastics leotard", setting:"gymnasium with equipment", type:"Individual"},
+  {name:"Cheer and Dance", kit:"cheer uniform with pom poms", setting:"gymnasium", type:"Tim"},
+  {name:"Boxing", kit:"boxing gloves and shorts", setting:"boxing ring gym", type:"Individual"},
+  {name:"Cycling", kit:"cycling jersey, helmet and bicycle", setting:"outdoor road course", type:"Individual"},
+  {name:"Rowing", kit:"rowing uniform and oar", setting:"river or lake course", type:"Individual"},
+  {name:"Badminton", kit:"badminton polo and shorts with racket", setting:"indoor badminton court", type:"Individual"},
+  {name:"Skateboarding", kit:"streetwear and helmet with skateboard", setting:"outdoor skate park", type:"Individual"},
+  {name:"Esports", kit:"gaming team jersey", setting:"gaming setup with monitors and rgb lighting", type:"Individual"},
+];
+
+// Dark = warna dominan pekat mengisi mayoritas frame (bukan hitam literal, kecuali warnanya memang Black)
+// Light = latar putih bersih dengan warna sebagai aksen
+const COLORS = [
+  {name:"Navy Blue", dark:"deep navy blue dominant background filling most of the frame, subtle darker navy gradient, white accent linework", light:"clean white dominant background with navy blue accent blocks and typography"},
+  {name:"Sky Blue", dark:"deep sky blue dominant background filling most of the frame, subtle darker blue gradient, white accent linework", light:"clean white dominant background with sky blue accent blocks and typography"},
+  {name:"Crimson Red", dark:"deep crimson red dominant background filling most of the frame, subtle darker red gradient, white accent linework", light:"clean white dominant background with crimson red accent blocks and typography"},
+  {name:"Maroon", dark:"deep maroon dominant background filling most of the frame, subtle darker maroon gradient, cream accent linework", light:"clean white dominant background with maroon accent blocks and typography"},
+  {name:"Orange", dark:"deep burnt orange dominant background filling most of the frame, subtle darker orange gradient, white accent linework", light:"clean white dominant background with vibrant orange accent blocks and typography"},
+  {name:"Gold", dark:"deep amber gold dominant background filling most of the frame, subtle darker gold gradient, navy accent linework", light:"clean white dominant background with golden yellow accent blocks and typography"},
+  {name:"Forest Green", dark:"deep forest green dominant background filling most of the frame, subtle darker green gradient, white accent linework", light:"clean white dominant background with forest green accent blocks and typography"},
+  {name:"Emerald Green", dark:"deep emerald green dominant background filling most of the frame, subtle darker green gradient, white accent linework", light:"clean white dominant background with emerald green accent blocks and typography"},
+  {name:"Purple", dark:"deep royal purple dominant background filling most of the frame, subtle darker purple gradient, white accent linework", light:"clean white dominant background with royal purple accent blocks and typography"},
+  {name:"Teal", dark:"deep teal dominant background filling most of the frame, subtle darker teal gradient, white accent linework", light:"clean white dominant background with teal accent blocks and typography"},
+  {name:"Black", dark:"true black dominant background filling most of the frame, subtle charcoal gradient, white accent linework", light:"clean white dominant background with black accent blocks and typography"},
+  {name:"Silver Gray", dark:"deep graphite gray dominant background filling most of the frame, subtle darker gray gradient, white accent linework", light:"clean white dominant background with silver gray accent blocks and typography"},
+  {name:"Pink", dark:"deep magenta pink dominant background filling most of the frame, subtle darker pink gradient, white accent linework", light:"clean white dominant background with vibrant pink accent blocks and typography"},
+  {name:"Yellow", dark:"deep mustard yellow dominant background filling most of the frame, subtle darker yellow gradient, navy accent linework", light:"clean white dominant background with bright yellow accent blocks and typography"},
+];
+
+// Kategori sekarang cuma nyimpen TOTAL qty, ukurannya didistribusi otomatis ke 3 size
+const CATEGORIES = [
+  {no:1, cat:"Game Day Graphics", qty:7},
+  {no:2, cat:"Match Week Posts", qty:5},
+  {no:3, cat:"Athlete Spotlights", qty:7},
+  {no:4, cat:"Player Statistics Graphics", qty:5},
+  {no:5, cat:"Goal Announcements", qty:6},
+  {no:6, cat:"Team Roster Posts", qty:5},
+  {no:7, cat:"Starting Lineup Templates", qty:5},
+  {no:8, cat:"Team Schedule Templates", qty:4},
+  {no:9, cat:"Season Schedule Graphics", qty:4},
+  {no:10, cat:"MVP of the Match Posts", qty:5},
+  {no:11, cat:"Full Time Results", qty:5},
+  {no:12, cat:"Half Time Updates", qty:4},
+  {no:13, cat:"Substitution Graphics", qty:4},
+  {no:14, cat:"Next Match Announcements", qty:5},
+  {no:15, cat:"Birthday Posts", qty:4},
+  {no:16, cat:"Countdown / Up Next", qty:4},
+  {no:17, cat:"Tryouts Announcement", qty:3},
+  {no:18, cat:"Sponsor Shoutout", qty:3},
+];
+
+const SIZES = ["Square","Portrait","Story"];
+// Rasio global dari breakdown awal: Square 30/85, Portrait 23/85, Story 32/85
+const SIZE_RATIOS = {Square:30/85, Portrait:23/85, Story:32/85};
+
+const ASPECT_TEXT = {
+  "Square": "exactly 1080 x 1080 pixels",
+  "Portrait": "exactly 1080 x 1350 pixels",
+  "Story": "exactly 1080 x 1920 pixels",
+};
+
+// Largest remainder method: pecah qty ke 3 ukuran sesuai rasio, total tetap pas
+function distributeSizes(qty){
+  const raw = SIZES.map(s => qty * SIZE_RATIOS[s]);
+  const floors = raw.map(Math.floor);
+  let allocated = floors.reduce((a,b)=>a+b,0);
+  let remainder = qty - allocated;
+  const fracOrder = raw.map((r,i)=>({i, frac:r-floors[i]})).sort((a,b)=>b.frac-a.frac);
+  const result = {};
+  SIZES.forEach((s,i)=>{ result[s] = floors[i]; });
+  for(let k=0;k<remainder;k++){ result[SIZES[fracOrder[k].i]] += 1; }
+  return result;
+}
+
+// Cuma zona posisi model yang dikunci gantian. Pose, ekspresi, posisi & isi teks bebas ChatGPT.
+const LAYOUTS = [
+  "athlete on the LEFT side of the frame",
+  "athlete on the RIGHT side of the frame",
+  "athlete CENTERED in the frame",
+  "athlete filling the LOWER HALF of the frame",
+  "athlete as a large silhouette filling the BACKGROUND",
+  "athlete in a small framed cutout in ONE CORNER",
+  "split-diagonal composition with the athlete on ONE diagonal half",
+  "athlete cropped close, upper body only",
+  "athlete positioned BOTTOM-LEFT",
+  "athlete positioned TOP-RIGHT",
+  "athlete small-scale and CENTERED within an open background",
+  "athlete on the RIGHT side, moving TOWARD the camera",
+];
+
+// Kategori ini sengaja TANPA model/atlet — fokus ke layout grid/list yang bersih
+const NO_MODEL_CATEGORIES = ["Team Schedule Templates", "Season Schedule Graphics"];
+
+function buildPrompt(sport, color, mode, gender, team, size, categoryName, layout){
+  const paletteText = mode==="Dark" ? color.dark : color.light;
+  const noModel = NO_MODEL_CATEGORIES.includes(categoryName);
+  let p;
+  if(noModel){
+    p = `${sport.name} themed sports graphic background, ${paletteText}, dynamic diagonal lines and geometric shapes, subtle sports-related iconography relevant to ${sport.name} (balls, lines, motion marks, or similar), no athletes, no people, clean minimal sports design aesthetic`;
+  } else {
+    p = `${sport.name} themed sports graphic, ${paletteText}, dynamic diagonal lines and geometric shapes, stadium-style dramatic lighting, high contrast modern athletic aesthetic, photorealistic generic ${gender} athlete in ${sport.kit}, plain solid-color unbranded apparel with no visible logos, brand marks, team crests, or trademarked designs of any kind, athletic build, generic facial features not resembling any real person, pose, action, and expression entirely up to you, ${sport.setting} blurred in background`;
+  }
+  if(team && team.trim()!==""){
+    p += `, "${team.trim().toUpperCase()}" team branding subtly visible`;
+  }
+  if(noModel){
+    p += `. Design this as a "${categoryName}" sports social media template, image size ${ASPECT_TEXT[size]}. Keep it simple and clean with NO athlete or person depicted anywhere in the image — focus on a clear structured grid or list area for schedule information. Include bold sports-poster typography (a short title plus the schedule/list content area), wording, placement, and styling entirely up to your own creative discretion as long as it fits the "${categoryName}" theme and stays readable.`;
+  } else {
+    p += `. Design this as a "${categoryName}" sports social media template, image size ${ASPECT_TEXT[size]}. Athlete position: ${layout} — everything else about the pose and framing is your creative choice. Include bold sports-poster typography (one main headline plus a short supporting tagline), wording, placement, and styling entirely up to your own creative discretion as long as it fits the "${categoryName}" theme and stays readable.`;
+  }
+  return p;
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+// Bangun daftar 85 instance: {catNo, catName, size, idxInSize, key}
+function buildInstances(){
+  const instances = [];
+  CATEGORIES.forEach(item=>{
+    const dist = distributeSizes(item.qty);
+    SIZES.forEach(size=>{
+      const count = dist[size];
+      for(let i=0;i<count;i++){
+        instances.push({
+          catNo: item.no,
+          catName: item.cat,
+          size: size,
+          idxInSize: i+1,
+          totalInSize: count,
+          key: `${item.no}_${size}_${i}`,
+        });
+      }
+    });
+  });
+  return instances;
+}
+
+// Assign Dark/Light dari kantong yang diacak, totalnya tetap 50:50 (85 -> 43/42)
+function assignDarkLight(instances){
+  const total = instances.length;
+  const darkCount = Math.round(total/2);
+  const lightCount = total - darkCount;
+  const bag = shuffle([
+    ...Array(darkCount).fill("Dark"),
+    ...Array(lightCount).fill("Light"),
+  ]);
+  instances.forEach((inst,i)=>{ inst.mode = bag[i]; });
+}
+
+// Assign layout zona secara global rotating (ga reset per kategori/ukuran)
+function assignLayouts(instances){
+  instances.forEach((inst,i)=>{ inst.layout = LAYOUTS[i % LAYOUTS.length]; });
+}
+
+const sportSel = document.getElementById('sportSel');
+const colorSel = document.getElementById('colorSel');
+const genderSel = document.getElementById('genderSel');
+const teamInput = document.getElementById('teamInput');
+const tableWrap = document.getElementById('tableWrap');
+const statsRow = document.getElementById('statsRow');
+const footerNote = document.getElementById('footerNote');
+const fsTotal = document.getElementById('fsTotal');
+const fsBarFill = document.getElementById('fsBarFill');
+const fsSizes = document.getElementById('fsSizes');
+const fsDarkLight = document.getElementById('fsDarkLight');
+const fsDetail = document.getElementById('fsDetail');
+const fsToggle = document.getElementById('fsToggle');
+const fsReset = document.getElementById('fsReset');
+const groupByCatBtn = document.getElementById('groupByCat');
+const groupBySizeBtn = document.getElementById('groupBySize');
+const reshuffleBtn = document.getElementById('reshuffleBtn');
+
+SPORTS.forEach(s=>{
+  const o=document.createElement('option');
+  o.value=s.name; o.textContent=s.name;
+  sportSel.appendChild(o);
+});
+COLORS.forEach(c=>{
+  const o=document.createElement('option');
+  o.value=c.name; o.textContent=c.name;
+  colorSel.appendChild(o);
+});
+sportSel.value="Track and Field";
+colorSel.value="Navy Blue";
+
+let copiedSet = new Set();
+let fsDetailOpen = false;
+let groupMode = "cat"; // "cat" | "size"
+let currentInstances = [];
+
+function generatePromptsForInstances(){
+  const sport = SPORTS.find(s=>s.name===sportSel.value);
+  const color = COLORS.find(c=>c.name===colorSel.value);
+  const gender = genderSel.value;
+  const team = teamInput.value;
+  currentInstances.forEach(inst=>{
+    inst.prompt = buildPrompt(sport, color, inst.mode, gender, team, inst.size, inst.catName, inst.layout);
+  });
+}
+
+function renderCard(inst){
+  const card = document.createElement('div');
+  card.className = "row-card";
+  card.innerHTML = `
+    <div class="row-no">${inst.idxInSize}/${inst.totalInSize}</div>
+    <div class="row-main">
+      <div class="row-head">
+        <span class="badge size">${inst.size}</span>
+        <span class="badge ${inst.mode==='Dark'?'mode-dark':'mode-light'}">${inst.mode}</span>
+      </div>
+      <div class="prompt-text">${inst.prompt}</div>
+    </div>
+    <div class="row-copy">
+      <button class="copy-btn" data-key="${inst.key}">Copy</button>
+    </div>
+  `;
+  return card;
+}
+
+function renderGroupedByCategory(){
+  tableWrap.innerHTML = "";
+  CATEGORIES.forEach(item=>{
+    const groupInstances = currentInstances.filter(inst=>inst.catNo===item.no);
+    const block = document.createElement('div');
+    block.className = "group-block";
+    block.innerHTML = `
+      <div class="group-block-header">
+        <span class="row-no">${String(item.no).padStart(2,'0')}</span>
+        <span class="group-block-title">${item.cat}</span>
+        <span class="group-block-count">${groupInstances.length} template</span>
+      </div>
+    `;
+    groupInstances.forEach(inst=>{ block.appendChild(renderCard(inst)); });
+    tableWrap.appendChild(block);
+  });
+}
+
+function renderGroupedBySize(){
+  tableWrap.innerHTML = "";
+  SIZES.forEach(size=>{
+    const groupInstances = currentInstances.filter(inst=>inst.size===size);
+    const block = document.createElement('div');
+    block.className = "group-block";
+    block.innerHTML = `
+      <div class="group-block-header">
+        <span class="group-block-title">${size}</span>
+        <span class="group-block-count">${groupInstances.length} template</span>
+      </div>
+    `;
+    groupInstances.forEach(inst=>{
+      const card = renderCard(inst);
+      const head = card.querySelector('.row-head');
+      const catTag = document.createElement('span');
+      catTag.className = "badge size";
+      catTag.style.background = "transparent";
+      catTag.textContent = inst.catName;
+      head.insertBefore(catTag, head.firstChild);
+      block.appendChild(card);
+    });
+    tableWrap.appendChild(block);
+  });
+}
+
+function renderTable(){
+  if(groupMode==="cat"){ renderGroupedByCategory(); } else { renderGroupedBySize(); }
+  attachCopyHandlers();
+}
+
+function render(fullRebuild){
+  const sport = SPORTS.find(s=>s.name===sportSel.value);
+  const color = COLORS.find(c=>c.name===colorSel.value);
+
+  if(fullRebuild){
+    currentInstances = buildInstances();
+    assignDarkLight(currentInstances);
+    assignLayouts(currentInstances);
+    copiedSet = new Set();
+  }
+  generatePromptsForInstances();
+  renderTable();
+
+  const totalQty = currentInstances.length;
+  const sizeCounts = {};
+  SIZES.forEach(s=>{ sizeCounts[s] = currentInstances.filter(i=>i.size===s).length; });
+  const darkTotal = currentInstances.filter(i=>i.mode==="Dark").length;
+  const lightTotal = totalQty - darkTotal;
+
+  statsRow.innerHTML = `
+    <div class="stat-chip">Total template: <b>${totalQty}</b></div>
+    <div class="stat-chip">Square: <b>${sizeCounts.Square}</b></div>
+    <div class="stat-chip">Portrait: <b>${sizeCounts.Portrait}</b></div>
+    <div class="stat-chip">Story: <b>${sizeCounts.Story}</b></div>
+    <div class="stat-chip">Dark: <b>${darkTotal}</b> / Light: <b>${lightTotal}</b></div>
+    <div class="stat-chip">Sport: <b>${sport.name}</b></div>
+    <div class="stat-chip">Warna: <b>${color.name}</b></div>
+  `;
+
+  footerNote.innerHTML = `Sport tersedia: ${SPORTS.length} cabang. Warna aksen tersedia: ${COLORS.length} pilihan. Tiap kategori otomatis kebagi ke 3 ukuran secara proporsional. Dark/Light diacak dari kantong berisi ${darkTotal} Dark + ${lightTotal} Light, jadi urutannya random tapi totalnya tetap seimbang. Zona posisi model dikunci gantian (${LAYOUTS.length} kombinasi, jalan terus lintas kategori & ukuran) — pose, ekspresi, dan teks sepenuhnya bebas ChatGPT. Ganti dropdown kapan saja, seluruh prompt otomatis update (Dark/Light &amp; distribusi ukuran ikut diacak ulang).`;
+
+  updateFlyingStats();
+}
+
+function attachCopyHandlers(){
+  document.querySelectorAll('.copy-btn').forEach(btn=>{
+    const key = btn.getAttribute('data-key');
+    if(copiedSet.has(key)){
+      btn.textContent = "✓ Copied";
+      btn.classList.add('copied-done');
+    }
+    btn.addEventListener('click', ()=>{
+      const inst = currentInstances.find(i=>i.key===key);
+      if(!inst) return;
+      navigator.clipboard.writeText(inst.prompt).then(()=>{
+        copiedSet.add(key);
+        btn.textContent = "✓ Copied";
+        btn.classList.add('copied-done');
+        updateFlyingStats();
+      });
+    });
+  });
+}
+
+function updateFlyingStats(){
+  const totalAll = currentInstances.length;
+  const copiedCount = copiedSet.size;
+  fsTotal.innerHTML = `<b>${copiedCount}</b> / ${totalAll} copied`;
+  fsBarFill.style.width = totalAll>0 ? `${(copiedCount/totalAll*100).toFixed(1)}%` : "0%";
+
+  const sizeTotals = {}, sizeCopied = {};
+  SIZES.forEach(s=>{ sizeTotals[s]=0; sizeCopied[s]=0; });
+  const dlTotals = {Dark:0, Light:0}, dlCopied = {Dark:0, Light:0};
+
+  currentInstances.forEach(inst=>{
+    sizeTotals[inst.size]++;
+    dlTotals[inst.mode]++;
+    if(copiedSet.has(inst.key)){
+      sizeCopied[inst.size]++;
+      dlCopied[inst.mode]++;
+    }
+  });
+
+  fsSizes.innerHTML = SIZES.map(sz=>
+    `<span class="fs-chip">${sz} ${sizeCopied[sz]}/${sizeTotals[sz]}</span>`
+  ).join('');
+
+  fsDarkLight.innerHTML = `
+    <span class="fs-chip dark-chip">Dark ${dlCopied.Dark}/${dlTotals.Dark}</span>
+    <span class="fs-chip light-chip">Light ${dlCopied.Light}/${dlTotals.Light}</span>
+  `;
+
+  const catCopied = {}, catTotals = {};
+  CATEGORIES.forEach(c=>{ catTotals[c.no]=0; catCopied[c.no]=0; });
+  currentInstances.forEach(inst=>{
+    catTotals[inst.catNo]++;
+    if(copiedSet.has(inst.key)) catCopied[inst.catNo]++;
+  });
+  fsDetail.innerHTML = CATEGORIES.map(item=>
+    `<div class="fs-detail-row"><span>${item.cat}</span><b>${catCopied[item.no]}/${catTotals[item.no]}</b></div>`
+  ).join('');
+}
+
+fsToggle.addEventListener('click', ()=>{
+  fsDetailOpen = !fsDetailOpen;
+  fsDetail.style.display = fsDetailOpen ? "block" : "none";
+  fsToggle.textContent = fsDetailOpen ? "Detail ▴" : "Detail ▾";
+});
+
+fsReset.addEventListener('click', ()=>{
+  copiedSet = new Set();
+  document.querySelectorAll('.copy-btn').forEach(btn=>{
+    btn.textContent = "Copy";
+    btn.classList.remove('copied-done');
+  });
+  updateFlyingStats();
+});
+
+groupByCatBtn.addEventListener('click', ()=>{
+  groupMode = "cat";
+  groupByCatBtn.classList.add('active');
+  groupBySizeBtn.classList.remove('active');
+  renderTable();
+});
+groupBySizeBtn.addEventListener('click', ()=>{
+  groupMode = "size";
+  groupBySizeBtn.classList.add('active');
+  groupByCatBtn.classList.remove('active');
+  renderTable();
+});
+
+reshuffleBtn.addEventListener('click', ()=>{
+  assignDarkLight(currentInstances);
+  copiedSet = new Set();
+  render(false);
+});
+
+document.getElementById('copyAllBtn').addEventListener('click', ()=>{
+  let out = "";
+  const grouped = groupMode==="cat"
+    ? CATEGORIES.map(item=>({label:item.cat, items:currentInstances.filter(i=>i.catNo===item.no)}))
+    : SIZES.map(size=>({label:size, items:currentInstances.filter(i=>i.size===size)}));
+  grouped.forEach(g=>{
+    out += `=== ${g.label} (${g.items.length}x) ===\n`;
+    g.items.forEach(inst=>{
+      out += `[${inst.size} / ${inst.mode}] ${inst.prompt}\n\n`;
+    });
+  });
+  navigator.clipboard.writeText(out.trim()).then(()=>{
+    const btn = document.getElementById('copyAllBtn');
+    const orig = btn.textContent;
+    btn.textContent = "Semua ke-copy";
+    setTimeout(()=>{ btn.textContent = orig; }, 1600);
+  });
+});
+
+document.getElementById('scrollTop').addEventListener('click', ()=>{
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+[sportSel, colorSel, genderSel, teamInput].forEach(el=>{
+  el.addEventListener('input', ()=>render(true));
+  el.addEventListener('change', ()=>render(true));
+});
+
+render(true);
+</script>
+</body>
+</html>
