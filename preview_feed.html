@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LevramStudio — Preview Maker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f10;
+    --surface: #1a1a1d;
+    --surface2: #242428;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0f0f0;
+    --muted: #888;
+    --accent: #f5a623;
+    --accent2: #e85d75;
+    --teal: #14b8a6;
+    --blue: #4a9eff;
+    --dark-tag: #26325A;
+    --light-tag: #3A331A;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 1.1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+  .logo { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.03em; }
+  .logo span { color: var(--accent); }
+  .tagline { color: var(--muted); font-size: 0.8rem; }
+
+  .tabs { display: flex; gap: 0.4rem; }
+  .tab-btn {
+    background: var(--surface2); color: var(--muted);
+    border: 1px solid var(--border2);
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.8rem; font-weight: 600;
+    cursor: pointer;
+  }
+  .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  .app {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    min-height: calc(100vh - 66px);
+  }
+
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    max-height: calc(100vh - 66px);
+  }
+
+  .section-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .badge { font-size: 0.66rem; padding: 2px 7px; border-radius: 99px; font-weight: 600; }
+  .badge-dark { background: var(--dark-tag); color: #B9C4E8; }
+  .badge-light { background: var(--light-tag); color: #F0CD73; }
+  .badge-amber { background: rgba(245,166,35,0.15); color: var(--accent); }
+
+  .upload-zone {
+    border: 1.5px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 0.9rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: var(--surface2);
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: rgba(245,166,35,0.06); }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-zone .uz-icon { font-size: 1.3rem; margin-bottom: 0.2rem; }
+  .upload-zone .uz-title { font-size: 0.78rem; font-weight: 600; }
+  .upload-zone .uz-sub { font-size: 0.68rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .grid-preview {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    margin-top: 0.55rem;
+  }
+  .thumb {
+    aspect-ratio: 1;
+    border-radius: 5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    position: relative;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb .remove-btn {
+    position: absolute; top: 2px; right: 2px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: rgba(0,0,0,0.75); color: #fff; font-size: 9px;
+    display: none; align-items: center; justify-content: center;
+    cursor: pointer; border: none;
+  }
+  .thumb:hover .remove-btn { display: flex; }
+  .grid-empty-hint {
+    grid-column: 1 / -1;
+    border: 1px dashed var(--border);
+    border-radius: 6px; padding: 0.55rem;
+    text-align: center; font-size: 0.7rem; color: var(--muted);
+  }
+
+  .upload-row-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.68rem; font-weight: 600;
+    padding: 3px 9px; border-radius: 6px;
+    background: var(--surface2); color: var(--text);
+    border: 1px solid var(--border2); cursor: pointer;
+  }
+  .upload-row-btn:hover { background: rgba(255,255,255,0.08); }
+
+  .divider { height: 1px; background: var(--border); }
+
+  .text-input, .num-input, select.text-input {
+    width: 100%;
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.65rem;
+    font-size: 0.8rem;
+    outline: none;
+  }
+  .text-input:focus, .num-input:focus { border-color: var(--blue); }
+  .field-hint { font-size: 0.68rem; color: var(--muted); margin-top: 0.35rem; line-height: 1.5; }
+  .field-row { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.6rem; }
+  .field-row label { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+  .field-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+
+  .btn {
+    border: none; border-radius: var(--radius-sm);
+    font-size: 0.83rem; font-weight: 600;
+    cursor: pointer; transition: all 0.14s;
+    padding: 0.62rem 1.1rem;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #e8961f; }
+  .btn-primary:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; transform: none; }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border2); }
+  .btn-outline:hover { background: var(--surface2); }
+  .btn-outline:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-blue { background: var(--blue); color: #fff; }
+  .btn-blue:hover { background: #3a8ce8; }
+  .btn-blue:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; transform: none; }
+  .btn-danger { background: rgba(232,93,117,0.12); color: var(--accent2); border: 1px solid rgba(232,93,117,0.25); }
+  .btn-danger:hover { background: rgba(232,93,117,0.22); }
+
+  .dl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+  .btn-dl {
+    background: rgba(20,184,166,0.1); color: var(--teal);
+    border: 1px solid rgba(20,184,166,0.25);
+    padding: 0.55rem 0.4rem; font-size: 0.76rem;
+  }
+  .btn-dl:hover { background: rgba(20,184,166,0.2); }
+  .btn-dl:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  .tips-box {
+    background: rgba(245,166,35,0.06);
+    border: 1px solid rgba(245,166,35,0.18);
+    border-radius: 8px; padding: 0.65rem 0.85rem;
+    font-size: 0.72rem; color: var(--muted); line-height: 1.6;
+  }
+  .tips-box strong { color: var(--accent); }
+
+  .preview-area { display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
+  .preview-toolbar {
+    padding: 0.8rem 1.5rem; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .preview-canvas-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 1.5rem; overflow: auto; }
+  canvas.preview-canvas { border-radius: var(--radius); max-width: 100%; max-height: 78vh; display: block; box-shadow: 0 16px 48px rgba(0,0,0,0.55); background: #fff; }
+
+  .empty-state { text-align: center; color: var(--muted); }
+  .empty-state .big-icon { font-size: 3rem; margin-bottom: 0.7rem; }
+  .empty-state h3 { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+  .empty-state p { font-size: 0.8rem; max-width: 280px; margin: 0 auto; line-height: 1.6; }
+
+  .rec-indicator {
+    display: none; align-items: center; gap: 6px;
+    font-size: 0.75rem; font-weight: 600; color: var(--accent2);
+    padding: 3px 10px; border-radius: 99px;
+    background: rgba(232,93,117,0.12); border: 1px solid rgba(232,93,117,0.28);
+  }
+  .rec-indicator.active { display: inline-flex; }
+  .rec-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent2); animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+  .timer-text { font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .asset-count { font-size: 0.75rem; color: var(--muted); }
+
+  .rec-progress-wrap { height: 3px; background: var(--border); overflow: hidden; flex-shrink: 0; }
+  .rec-progress-fill { height: 100%; background: var(--accent2); width: 0%; transition: width 1s linear; }
+
+  .pdf-status { font-size: 0.72rem; color: var(--teal); margin-top: 0.4rem; display: none; }
+  .pdf-status.show { display: block; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: flex; flex-direction: column; gap: 1.1rem; }
+
+  .slider-row { display: flex; align-items: center; gap: 0.6rem; }
+  .slider-row input[type=range] { flex: 1; }
+  .slider-val { font-family: monospace; font-size: 0.75rem; color: var(--accent); width: 42px; text-align: right; }
+
+  .thumb-grid-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    width: 100%;
+    max-width: 1100px;
+  }
+  .thumb-grid-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.8rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .thumb-grid-label {
+    font-size: 0.78rem; font-weight: 600; color: var(--text);
+  }
+  .thumb-grid-canvas {
+    width: 100%; max-height: none; box-shadow: none;
+    border: 1px solid var(--border);
+  }
+  @media (max-width: 900px) {
+    .thumb-grid-wrap { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">LevramStudio <span>Preview Maker</span></div>
+    <div class="tagline">Thumbnail, video, screenshot &amp; PDF asset buat listing Etsy</div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="thumb">Thumbnail</button>
+    <button class="tab-btn" data-tab="video">Video</button>
+    <button class="tab-btn" data-tab="ss">Screenshot</button>
+    <button class="tab-btn" data-tab="pdf">PDF</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- Upload Dark -->
+    <div>
+      <div class="section-label">
+        <span>&#9679; Gambar Dark <span class="badge badge-dark" id="dark-count">0</span></span>
+        <label class="upload-row-btn">
+          &#9889; Upload
+          <input type="file" id="dark-input" accept="image/*" multiple style="display:none">
+        </label>
+      </div>
+      <div class="grid-preview" id="dark-grid">
+        <div class="grid-empty-hint">Belum ada gambar Dark</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Upload Light -->
+    <div>
+      <div class="section-label">
+        <span>&#9675; Gambar Light <span class="badge badge-light" id="light-count">0</span></span>
+        <label class="upload-row-btn">
+          &#9889; Upload
+          <input type="file" id="light-input" accept="image/*" multiple style="display:none">
+        </label>
+      </div>
+      <div class="grid-preview" id="light-grid">
+        <div class="grid-empty-hint">Belum ada gambar Light</div>
+      </div>
+      <div class="field-hint">Urutan render otomatis diselang-seling: Dark, Light, Dark, Light, dst. Lebar semua gambar dianggap sama (1080px) &mdash; tinggi bebas beda-beda, otomatis rapi.</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- THUMBNAIL controls -->
+    <div id="ctrl-thumb" class="ctrl-panel">
+      <div class="section-label">&#128444; Pengaturan Thumbnail</div>
+      <div class="field-row">
+        <label>Jumlah kolom mosaic</label>
+        <input type="number" class="num-input" id="thumb-cols" value="10" min="4" max="16">
+      </div>
+      <div class="field-row">
+        <label>Rotasi (derajat)</label>
+        <div class="slider-row">
+          <input type="range" id="thumb-angle" min="-25" max="25" value="-12">
+          <span class="slider-val" id="thumb-angle-val">-12&deg;</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="thumb-generate">&#9654; Generate 4 Thumbnail</button>
+      <div class="field-hint">Otomatis bikin 4 versi: Campuran (semua ukuran), Square 1080x1080, Portrait 1080x1350, Story 1080x1920 &mdash; gambar diklasifikasi otomatis dari rasio aslinya.</div>
+    </div>
+
+    <!-- VIDEO controls -->
+    <div id="ctrl-video" class="ctrl-panel" style="display:none">
+      <div class="section-label">&#127909; Pengaturan Video</div>
+      <div class="field-hint" style="margin-top:0">Ukuran canvas video otomatis disamain sama Thumbnail (1600x1200).</div>
+      <div class="field-row" style="margin-top:0.6rem">
+        <label>Jumlah kolom</label>
+        <input type="number" class="num-input" id="video-cols" value="6" min="2" max="10">
+      </div>
+      <div class="field-row">
+        <label>Kecepatan scroll (px/detik)</label>
+        <input type="number" class="num-input" id="video-speed" value="22" min="5" max="100">
+      </div>
+      <button class="btn btn-primary" id="video-generate">&#9654; Mulai Animasi</button>
+      <button class="btn btn-outline" id="video-record" disabled style="margin-top:0.5rem">&#9210; Rekam Video (.webm) &mdash; 10s</button>
+      <div class="dl-row" style="margin-top:0.5rem">
+        <button class="btn btn-dl" id="video-dl-png" disabled>Snapshot PNG</button>
+        <button class="btn btn-dl" id="video-stop" disabled>Stop</button>
+      </div>
+    </div>
+
+    <!-- SCREENSHOT controls -->
+    <div id="ctrl-ss" class="ctrl-panel" style="display:none">
+      <div class="section-label">&#128241; Pengaturan Screenshot (What's Included)</div>
+      <div class="field-row">
+        <label>Judul banner (opsional)</label>
+        <input type="text" class="text-input" id="ss-banner" placeholder="FREE TEMPLATE GUIDE PERFECT FOR BEGINNERS">
+      </div>
+      <div class="field-3col">
+        <div class="field-row">
+          <label>Portrait (4:5)</label>
+          <input type="number" class="num-input" id="ss-portrait" value="30" min="0">
+        </div>
+        <div class="field-row">
+          <label>Square (1:1)</label>
+          <input type="number" class="num-input" id="ss-square" value="30" min="0">
+        </div>
+        <div class="field-row">
+          <label>Story (9:16)</label>
+          <input type="number" class="num-input" id="ss-story" value="30" min="0">
+        </div>
+      </div>
+      <div class="field-hint">Total otomatis dijumlah dari 3 angka di atas. Ini murni infografis dari input manual, tidak butuh upload gambar.</div>
+      <button class="btn btn-primary" id="ss-generate">&#9654; Generate Screenshot</button>
+      <div class="dl-row" style="margin-top:0.5rem">
+        <button class="btn btn-dl" id="ss-dl-png" disabled>PNG</button>
+        <button class="btn btn-dl" id="ss-dl-jpg" disabled>JPG</button>
+      </div>
+    </div>
+
+    <!-- PDF controls -->
+    <div id="ctrl-pdf" class="ctrl-panel" style="display:none">
+      <div class="section-label">&#128279; Link Asset (PDF)</div>
+      <input type="text" class="text-input" id="drive-link" placeholder="https://drive.google.com/...">
+      <div class="field-hint">PDF akan pakai gambar Thumbnail yang terakhir di-generate sebagai cover, plus 1 halaman berisi link download (bisa diklik). Generate Thumbnail dulu di tab Thumbnail.</div>
+      <button class="btn btn-blue" id="generate-pdf-btn" disabled style="margin-top:0.5rem">&#128196; Generate PDF</button>
+      <div class="pdf-status" id="pdf-status">&#10003; PDF berhasil dibuat &amp; diunduh.</div>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-danger" id="clear-btn">&#128465; Reset Semua Gambar</button>
+
+    <div class="tips-box">
+      <strong>&#128161; Tips:</strong> Upload gambar Dark &amp; Light dulu di atas (bisa banyak sekaligus). Tiap tab (Thumbnail/Video/Screenshot/PDF) punya pengaturan sendiri di panel ini &mdash; klik tab di header buat pindah.
+    </div>
+
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-area">
+    <div class="preview-toolbar">
+      <div style="display:flex;align-items:center;gap:0.75rem">
+        <span class="rec-indicator" id="rec-indicator"><span class="rec-dot"></span> REC</span>
+        <span class="timer-text" id="timer-text"></span>
+      </div>
+      <span class="asset-count" id="asset-count">0 gambar (0 Dark / 0 Light)</span>
+    </div>
+    <div class="rec-progress-wrap"><div class="rec-progress-fill" id="rec-progress-fill"></div></div>
+
+    <div class="preview-canvas-wrap">
+      <div class="empty-state" id="empty-state">
+        <div class="big-icon">&#127912;</div>
+        <h3>Belum ada preview</h3>
+        <p>Upload gambar Dark &amp; Light di sidebar, pilih tab, lalu klik tombol Generate.</p>
+      </div>
+      <div id="thumb-grid-wrap" class="thumb-grid-wrap" style="display:none">
+        <div class="thumb-grid-item">
+          <div class="thumb-grid-label" id="label-thumb-all">Campuran (semua ukuran)</div>
+          <canvas id="canvas-thumb-all" class="preview-canvas thumb-grid-canvas"></canvas>
+          <div class="dl-row"><button class="btn btn-dl" data-target="canvas-thumb-all" data-fmt="png">PNG</button><button class="btn btn-dl" data-target="canvas-thumb-all" data-fmt="jpg">JPG</button></div>
+        </div>
+        <div class="thumb-grid-item">
+          <div class="thumb-grid-label" id="label-thumb-square">Square 1080x1080 — 0 gambar</div>
+          <canvas id="canvas-thumb-square" class="preview-canvas thumb-grid-canvas"></canvas>
+          <div class="dl-row"><button class="btn btn-dl" data-target="canvas-thumb-square" data-fmt="png">PNG</button><button class="btn btn-dl" data-target="canvas-thumb-square" data-fmt="jpg">JPG</button></div>
+        </div>
+        <div class="thumb-grid-item">
+          <div class="thumb-grid-label" id="label-thumb-portrait">Portrait 1080x1350 — 0 gambar</div>
+          <canvas id="canvas-thumb-portrait" class="preview-canvas thumb-grid-canvas"></canvas>
+          <div class="dl-row"><button class="btn btn-dl" data-target="canvas-thumb-portrait" data-fmt="png">PNG</button><button class="btn btn-dl" data-target="canvas-thumb-portrait" data-fmt="jpg">JPG</button></div>
+        </div>
+        <div class="thumb-grid-item">
+          <div class="thumb-grid-label" id="label-thumb-story">Story 1080x1920 — 0 gambar</div>
+          <canvas id="canvas-thumb-story" class="preview-canvas thumb-grid-canvas"></canvas>
+          <div class="dl-row"><button class="btn btn-dl" data-target="canvas-thumb-story" data-fmt="png">PNG</button><button class="btn btn-dl" data-target="canvas-thumb-story" data-fmt="jpg">JPG</button></div>
+        </div>
+      </div>
+      <canvas id="canvas-video" class="preview-canvas" style="display:none"></canvas>
+      <canvas id="canvas-ss" class="preview-canvas" style="display:none"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+let darkImages = [];   // {url, img}
+let lightImages = [];  // {url, img}
+
+let currentTab = 'thumb';
+
+let videoAnimRunning = false;
+let videoAnimFrame = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+let timerInterval = null;
+const REC_DURATION = 10;
+
+let lastThumbCanvasDataUrl = null; // dipakai buat PDF cover
+
+// ── Tab switching ──────────────────────────────────────────────
+function showTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.ctrl-panel').forEach(p=>p.style.display='none');
+  document.getElementById('ctrl-'+tab).style.display = 'block';
+
+  document.getElementById('thumb-grid-wrap').style.display = 'none';
+  document.getElementById('canvas-video').style.display = 'none';
+  document.getElementById('canvas-ss').style.display = 'none';
+  stopVideoAnim();
+
+  const emptyState = document.getElementById('empty-state');
+  if(tab==='thumb'){
+    const wrap = document.getElementById('thumb-grid-wrap');
+    if(wrap.dataset.rendered==='1'){ wrap.style.display='grid'; emptyState.style.display='none'; }
+    else emptyState.style.display = '';
+  } else if(tab==='video'){
+    const c = document.getElementById('canvas-video');
+    if(c.dataset.rendered==='1'){ c.style.display='block'; emptyState.style.display='none'; }
+    else emptyState.style.display = '';
+  } else if(tab==='ss'){
+    const c = document.getElementById('canvas-ss');
+    if(c.dataset.rendered==='1'){ c.style.display='block'; emptyState.style.display='none'; }
+    else emptyState.style.display = '';
+  } else {
+    emptyState.style.display = '';
+  }
+}
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>showTab(btn.dataset.tab));
+});
+
+// ── Upload helpers ─────────────────────────────────────────────
+function loadImagesToList(files, list, typeLabel, doneCb){
+  const toLoad = Array.from(files);
+  if(!toLoad.length) return;
+  let loaded = 0;
+  toLoad.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        list.push({url:e.target.result, img, type:typeLabel});
+        loaded++;
+        if(loaded===toLoad.length) doneCb();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderUploadGrid(gridId, list){
+  const gridEl = document.getElementById(gridId);
+  gridEl.innerHTML = '';
+  if(!list.length){
+    const hint = document.createElement('div');
+    hint.className = 'grid-empty-hint';
+    hint.textContent = 'Belum ada gambar';
+    gridEl.appendChild(hint);
+    return;
+  }
+  list.forEach((item,i)=>{
+    const div = document.createElement('div');
+    div.className = 'thumb';
+    const im = document.createElement('img');
+    im.src = item.url;
+    div.appendChild(im);
+    const rm = document.createElement('button');
+    rm.className = 'remove-btn'; rm.textContent = 'x';
+    rm.addEventListener('click', ev=>{
+      ev.stopPropagation();
+      list.splice(i,1);
+      refreshUploads();
+    });
+    div.appendChild(rm);
+    gridEl.appendChild(div);
+  });
+}
+
+function refreshUploads(){
+  renderUploadGrid('dark-grid', darkImages);
+  renderUploadGrid('light-grid', lightImages);
+  document.getElementById('dark-count').textContent = darkImages.length;
+  document.getElementById('light-count').textContent = lightImages.length;
+  document.getElementById('asset-count').textContent =
+    (darkImages.length+lightImages.length)+' gambar ('+darkImages.length+' Dark / '+lightImages.length+' Light)';
+}
+
+document.getElementById('dark-input').addEventListener('change', e=>{
+  loadImagesToList(e.target.files, darkImages, 'dark', refreshUploads);
+  e.target.value = '';
+});
+document.getElementById('light-input').addEventListener('change', e=>{
+  loadImagesToList(e.target.files, lightImages, 'light', refreshUploads);
+  e.target.value = '';
+});
+
+// Interleave Dark, Light, Dark, Light... (lanjut pakai sisa kalau salah satu abis)
+function buildInterleaved(){
+  const out = [];
+  const n = Math.max(darkImages.length, lightImages.length);
+  for(let i=0;i<n;i++){
+    if(darkImages[i]) out.push(darkImages[i]);
+    if(lightImages[i]) out.push(lightImages[i]);
+  }
+  return out;
+}
+
+// Klasifikasi ukuran gambar berdasarkan rasio aslinya (toleransi biar ga harus pixel-perfect)
+function classifySize(imgObj){
+  const w = imgObj.img.naturalWidth, h = imgObj.img.naturalHeight;
+  if(!w || !h) return 'other';
+  const ratio = w / h;
+  const targets = { square: 1080/1080, portrait: 1080/1350, story: 1080/1920 };
+  let best = 'other', bestDiff = 0.08; // toleransi ~8%
+  for(const key in targets){
+    const diff = Math.abs(ratio - targets[key]) / targets[key];
+    if(diff < bestDiff){ best = key; bestDiff = diff; }
+  }
+  return best;
+}
+
+// Bangun 4 set gambar: all (campuran interleaved), square, portrait, story
+// (masing-masing tetap urut dark/light dari interleaved asli, difilter per klasifikasi)
+function buildClassifiedSets(){
+  const all = buildInterleaved();
+  const sets = { all, square:[], portrait:[], story:[] };
+  all.forEach(imgObj=>{
+    const cls = classifySize(imgObj);
+    if(sets[cls]) sets[cls].push(imgObj);
+  });
+  return sets;
+}
+
+// Khusus Thumbnail: pisahin Dark & Light per klasifikasi ukuran, biar bisa disusun checkerboard
+function buildSizeDarkLightSets(){
+  function classifyList(list){
+    const out = {square:[], portrait:[], story:[]};
+    list.forEach(imgObj=>{
+      const cls = classifySize(imgObj);
+      if(out[cls]) out[cls].push(imgObj);
+    });
+    return out;
+  }
+  const darkCls = classifyList(darkImages);
+  const lightCls = classifyList(lightImages);
+  return {
+    all: { dark: darkImages, light: lightImages },
+    square: { dark: darkCls.square, light: lightCls.square },
+    portrait: { dark: darkCls.portrait, light: lightCls.portrait },
+    story: { dark: darkCls.story, light: lightCls.story },
+  };
+}
+
+// ── Column builder (dipakai Thumbnail & Video) ──────────────────
+// Susun gambar ke N kolom (round-robin), tiap gambar di-scale ke lebar kolom yg sama,
+// tinggi asli tetap proporsional (karena lebar asli semua gambar dianggap 1080 & seragam).
+function buildColumns(images, numCols, colWidth, gap){
+  const cols = Array.from({length:numCols}, ()=>({items:[], totalHeight:0}));
+  if(!images.length) return cols;
+  images.forEach((imgObj, i)=>{
+    const col = cols[i % numCols];
+    const scale = colWidth / imgObj.img.naturalWidth;
+    const h = imgObj.img.naturalHeight * scale;
+    col.items.push({img:imgObj.img, h, type:imgObj.type});
+  });
+  cols.forEach(col=>{
+    let y = 0;
+    col.items.forEach(it=>{ it.y = y; y += it.h + gap; });
+    col.totalHeight = y;
+  });
+  return cols;
+}
+
+// Pastikan tiap kolom cukup tinggi buat looping mulus (duplikat urutan sampai >= minHeight)
+function padColumnsToMinHeight(cols, minHeight){
+  cols.forEach(col=>{
+    if(col.totalHeight <= 0) return;
+    const original = col.items.map(it=>({img:it.img, h:it.h, type:it.type}));
+    while(col.totalHeight < minHeight){
+      let y = col.totalHeight;
+      original.forEach(o=>{
+        col.items.push({img:o.img, h:o.h, y, type:o.type});
+        y += o.h + 0;
+      });
+      col.totalHeight = y;
+    }
+  });
+}
+
+// Susun kolom dengan pola CHECKERBOARD sungguhan: tetangga atas/bawah/kiri/kanan
+// SELALU beda tipe (dark vs light) — bukan cuma digeser posisi, tapi memang gambar
+// yang dipilih dari pool Dark atau Light sesuai posisi (row+col) genap/ganjil.
+function buildCheckerboardColumns(darkList, lightList, numCols, colWidth, gap, minHeight){
+  const cols = Array.from({length:numCols}, ()=>({items:[], totalHeight:0}));
+  let darkPtr = 0, lightPtr = 0;
+  for(let ci=0; ci<numCols; ci++){
+    const col = cols[ci];
+    let y = 0, row = 0, guard = 0;
+    while(y < minHeight && guard < 400){
+      guard++;
+      const wantDark = (row + ci) % 2 === 0;
+      let type = wantDark ? 'dark' : 'light';
+      let pool = type==='dark' ? darkList : lightList;
+      if(!pool.length){
+        type = type==='dark' ? 'light' : 'dark';
+        pool = type==='dark' ? darkList : lightList;
+      }
+      if(!pool.length) break; // dua-duanya kosong
+      let imgObj;
+      if(type==='dark'){ imgObj = pool[darkPtr % pool.length]; darkPtr++; }
+      else { imgObj = pool[lightPtr % pool.length]; lightPtr++; }
+      const scale = colWidth / imgObj.img.naturalWidth;
+      const h = imgObj.img.naturalHeight * scale;
+      col.items.push({img:imgObj.img, h, y, type});
+      y += h + gap;
+      row++;
+    }
+    col.totalHeight = y;
+  }
+  return cols;
+}
+
+// ══════════════════════════════════════════════════════════════
+// THUMBNAIL — mosaic kolom, statis, dirotasi — 4 versi sekaligus
+// ══════════════════════════════════════════════════════════════
+const THUMB_W = 1600, THUMB_H = 1200;
+
+document.getElementById('thumb-angle').addEventListener('input', e=>{
+  document.getElementById('thumb-angle-val').textContent = e.target.value + '\u00b0';
+});
+
+function renderSingleThumbnail(canvas, darkList, lightList, numCols, angleRad, overlayText){
+  canvas.width = THUMB_W; canvas.height = THUMB_H;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#f3efe6';
+  ctx.fillRect(0,0,THUMB_W,THUMB_H);
+
+  if(!darkList.length && !lightList.length){
+    ctx.fillStyle = '#999';
+    ctx.font = '600 24px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Belum ada gambar ukuran ini', THUMB_W/2, THUMB_H/2);
+    canvas.dataset.rendered = '1';
+    return;
+  }
+
+  const stageW = Math.ceil(THUMB_W * 1.6);
+  const stageH = Math.ceil(THUMB_H * 1.9);
+  const stage = document.createElement('canvas');
+  stage.width = stageW; stage.height = stageH;
+  const sctx = stage.getContext('2d');
+  sctx.fillStyle = '#f3efe6';
+  sctx.fillRect(0,0,stageW,stageH);
+
+  const gap = 20;
+  const colWidth = (stageW - gap*(numCols-1)) / numCols;
+  // Checkerboard: tetangga atas/bawah/kiri/kanan selalu beda tipe (dark vs light)
+  const cols = buildCheckerboardColumns(darkList, lightList, numCols, colWidth, gap, stageH + colWidth);
+
+  cols.forEach((col, ci)=>{
+    const x = ci * (colWidth + gap);
+    col.items.forEach(it=>{
+      if(it.y > stageH) return;
+      sctx.save();
+      sctx.shadowColor = 'rgba(0,0,0,0.35)';
+      sctx.shadowBlur = 18;
+      sctx.shadowOffsetY = 8;
+      sctx.drawImage(it.img, x, it.y, colWidth, it.h);
+      sctx.restore();
+    });
+  });
+
+  ctx.save();
+  ctx.translate(THUMB_W/2, THUMB_H/2);
+  ctx.rotate(angleRad);
+  ctx.drawImage(stage, -stageW/2, -stageH/2);
+  ctx.restore();
+
+  // Keterangan jumlah gambar, ditempel langsung ke gambar (ikut kebawa pas didownload)
+  if(overlayText){
+    ctx.save();
+    ctx.font = '800 46px -apple-system, sans-serif';
+    const paddingX = 34, paddingY = 20;
+    const textW = ctx.measureText(overlayText).width;
+    const boxW = textW + paddingX*2;
+    const boxH = 88;
+    const boxX = (THUMB_W - boxW) / 2;
+    const boxY = (THUMB_H - boxH) / 2;
+    ctx.fillStyle = 'rgba(15,15,17,0.82)';
+    roundRect(ctx, boxX, boxY, boxW, boxH, 14);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(overlayText, THUMB_W/2, THUMB_H/2+2);
+    ctx.restore();
+  }
+
+  canvas.dataset.rendered = '1';
+}
+
+function renderThumbnail(){
+  const sets = buildSizeDarkLightSets();
+  if(!sets.all.dark.length && !sets.all.light.length){ alert('Upload gambar Dark/Light dulu.'); return; }
+
+  const numCols = parseInt(document.getElementById('thumb-cols').value,10) || 10;
+  const angleDeg = parseFloat(document.getElementById('thumb-angle').value) || 0;
+  const angleRad = angleDeg * Math.PI / 180;
+
+  const configs = [
+    {key:'all', canvasId:'canvas-thumb-all', labelId:'label-thumb-all', label:'Campuran (semua ukuran)', showCount:false, overlay:false, overlayShort:''},
+    {key:'square', canvasId:'canvas-thumb-square', labelId:'label-thumb-square', label:'Square 1080x1080', showCount:true, overlay:true, overlayShort:'Square 1080x1080'},
+    {key:'portrait', canvasId:'canvas-thumb-portrait', labelId:'label-thumb-portrait', label:'Portrait 1080x1350', showCount:true, overlay:true, overlayShort:'Portrait 1080x1350'},
+    {key:'story', canvasId:'canvas-thumb-story', labelId:'label-thumb-story', label:'Story 1080x1920', showCount:true, overlay:true, overlayShort:'Story 1080x1920'},
+  ];
+
+  configs.forEach(cfg=>{
+    const canvas = document.getElementById(cfg.canvasId);
+    const {dark, light} = sets[cfg.key];
+    const total = dark.length + light.length;
+    const overlayText = cfg.overlay ? (total + ' Images — ' + cfg.overlayShort) : null;
+    renderSingleThumbnail(canvas, dark, light, numCols, angleRad, overlayText);
+    const labelText = cfg.showCount ? (cfg.label + ' — ' + total + ' gambar') : (cfg.label + ' — ' + total + ' gambar total');
+    document.getElementById(cfg.labelId).textContent = labelText;
+  });
+
+  document.getElementById('thumb-grid-wrap').style.display = 'grid';
+  document.getElementById('thumb-grid-wrap').dataset.rendered = '1';
+  document.getElementById('empty-state').style.display = 'none';
+
+  lastThumbCanvasDataUrl = document.getElementById('canvas-thumb-all').toDataURL('image/png');
+  document.getElementById('generate-pdf-btn').disabled = !document.getElementById('drive-link').value.trim();
+}
+document.getElementById('thumb-generate').addEventListener('click', renderThumbnail);
+
+function downloadCanvasAs(canvas, format, prefix){
+  let mimeType = format==='png' ? 'image/png' : 'image/jpeg';
+  const dataUrl = canvas.toDataURL(mimeType, 0.95);
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = prefix + '-' + Date.now() + '.' + format;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+document.querySelectorAll('#thumb-grid-wrap .btn-dl').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const canvas = document.getElementById(btn.dataset.target);
+    downloadCanvasAs(canvas, btn.dataset.fmt, 'levram-' + btn.dataset.target.replace('canvas-',''));
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
+// VIDEO — kolom scroll bolak-balik (ganjil naik, genap turun)
+// Ukuran canvas disamain sama Thumbnail (THUMB_W x THUMB_H)
+// ══════════════════════════════════════════════════════════════
+const videoCanvas = document.getElementById('canvas-video');
+const videoCtx = videoCanvas.getContext('2d');
+let videoCols = [];
+let videoColOffsets = [];
+let videoLastTime = null;
+
+function renderVideoSetup(){
+  if(!darkImages.length && !lightImages.length){ alert('Upload gambar Dark/Light dulu.'); return; }
+
+  videoCanvas.width = THUMB_W; videoCanvas.height = THUMB_H;
+
+  const numCols = parseInt(document.getElementById('video-cols').value,10) || 6;
+  const gap = 8;
+  const colWidth = (THUMB_W - gap*(numCols-1)) / numCols;
+  // Checkerboard juga di video — pakai semua gambar campur (ga difilter ukuran)
+  videoCols = buildCheckerboardColumns(darkImages, lightImages, numCols, colWidth, gap, THUMB_H * 2.2);
+  videoColOffsets = videoCols.map(()=>0);
+
+  videoCanvas.style.display = 'block';
+  videoCanvas.dataset.rendered = '1';
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('video-record').disabled = false;
+  document.getElementById('video-dl-png').disabled = false;
+  document.getElementById('video-stop').disabled = false;
+
+  startVideoAnim(colWidth, gap);
+}
+document.getElementById('video-generate').addEventListener('click', ()=>renderVideoSetup());
+
+function startVideoAnim(colWidth, gap){
+  stopVideoAnim();
+  videoAnimRunning = true;
+  videoLastTime = null;
+  const speed = parseFloat(document.getElementById('video-speed').value) || 22;
+
+  function frame(now){
+    if(!videoAnimRunning) return;
+    if(videoLastTime===null) videoLastTime = now;
+    const dt = (now - videoLastTime)/1000;
+    videoLastTime = now;
+
+    videoCtx.fillStyle = '#f3efe6';
+    videoCtx.fillRect(0,0,videoCanvas.width, videoCanvas.height);
+
+    videoCols.forEach((col, ci)=>{
+      if(col.totalHeight<=0) return;
+      const dir = (ci % 2 === 0) ? -1 : 1; // kolom index genap (1,3,5..) naik, ganjil (2,4..) turun
+      videoColOffsets[ci] += dir * speed * dt;
+      let off = videoColOffsets[ci] % col.totalHeight;
+      if(off < 0) off += col.totalHeight;
+
+      const x = ci * (colWidth + gap);
+      // gambar 2 salinan siklus biar nutup layar penuh saat scroll
+      [0, -col.totalHeight, col.totalHeight].forEach(shift=>{
+        col.items.forEach(it=>{
+          const y = it.y - off + shift;
+          if(y + it.h < -20 || y > videoCanvas.height + 20) return;
+          videoCtx.drawImage(it.img, x, y, colWidth, it.h);
+        });
+      });
+    });
+
+    videoAnimFrame = requestAnimationFrame(frame);
+  }
+  videoAnimFrame = requestAnimationFrame(frame);
+}
+function stopVideoAnim(){
+  videoAnimRunning = false;
+  if(videoAnimFrame){ cancelAnimationFrame(videoAnimFrame); videoAnimFrame = null; }
+}
+document.getElementById('video-stop').addEventListener('click', stopVideoAnim);
+document.getElementById('video-dl-png').addEventListener('click', ()=>downloadCanvasAs(videoCanvas,'png','levram-video-snapshot'));
+
+document.getElementById('video-record').addEventListener('click', ()=>{
+  if(mediaRecorder && mediaRecorder.state==='recording'){ stopRecording(); return; }
+  startRecording();
+});
+function startRecording(){
+  if(!videoAnimRunning) return;
+  recordedChunks = [];
+  let mime = 'video/webm;codecs=vp9';
+  if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
+  const stream = videoCanvas.captureStream(30);
+  mediaRecorder = new MediaRecorder(stream, {mimeType:mime});
+  mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) recordedChunks.push(e.data); };
+  mediaRecorder.onstop = downloadRecording;
+  mediaRecorder.start(100);
+
+  document.getElementById('rec-indicator').classList.add('active');
+  document.getElementById('video-record').textContent = 'Stop Rekam';
+  const fill = document.getElementById('rec-progress-fill');
+  fill.style.transition = 'none'; fill.style.width='0%'; fill.getBoundingClientRect();
+  fill.style.transition = 'width '+REC_DURATION+'s linear'; fill.style.width='100%';
+
+  let elapsed = 0;
+  timerInterval = setInterval(()=>{
+    elapsed++;
+    document.getElementById('timer-text').textContent = elapsed+'s / '+REC_DURATION+'s';
+    if(REC_DURATION-elapsed<=0) stopRecording();
+  },1000);
+}
+function stopRecording(){
+  if(mediaRecorder && mediaRecorder.state!=='inactive') mediaRecorder.stop();
+  clearInterval(timerInterval);
+  document.getElementById('rec-indicator').classList.remove('active');
+  document.getElementById('video-record').textContent = 'Rekam Video (.webm) — 10s';
+  document.getElementById('timer-text').textContent = '';
+  const fill = document.getElementById('rec-progress-fill');
+  fill.style.transition = 'none'; fill.style.width = '0%';
+}
+function downloadRecording(){
+  const blob = new Blob(recordedChunks, {type:'video/webm'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'levram-video-'+Date.now()+'.webm';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 5000);
+}
+
+// ══════════════════════════════════════════════════════════════
+// SCREENSHOT — infografis "What's Included"
+// ══════════════════════════════════════════════════════════════
+const ssCanvas = document.getElementById('canvas-ss');
+const ssCtx = ssCanvas.getContext('2d');
+const SS_W = 1600, SS_H = 1150;
+
+function drawInstagramPhone(ctx, x, y, w, h, images, postsCount){
+  const r = 34;
+  // body
+  ctx.save();
+  ctx.fillStyle = '#111';
+  roundRect(ctx, x, y, w, h, r+8); ctx.fill();
+  const pad = 10;
+  ctx.fillStyle = '#fff';
+  roundRect(ctx, x+pad, y+pad, w-pad*2, h-pad*2, r); ctx.fill();
+
+  const innerX = x+pad, innerY = y+pad, innerW = w-pad*2, innerH = h-pad*2;
+
+  // clip to rounded screen area so nothing draws outside
+  ctx.save();
+  roundRect(ctx, innerX, innerY, innerW, innerH, r);
+  ctx.clip();
+
+  // status bar
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(innerX, innerY, innerW, innerH*0.045);
+  ctx.fillStyle = '#111';
+  ctx.font = '600 ' + Math.round(innerW*0.045) + 'px -apple-system, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('8:30', innerX+innerW*0.05, innerY+innerH*0.032);
+
+  // header row: username + menu
+  let cy = innerY + innerH*0.075;
+  ctx.fillStyle = '#111';
+  ctx.font = '700 ' + Math.round(innerW*0.052) + 'px -apple-system, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('User_Name  \u25BE', innerX+innerW*0.05, cy+innerH*0.03);
+
+  // profile row: avatar circle + stats
+  cy += innerH*0.075;
+  const avatarR = innerW*0.11;
+  const avatarCx = innerX+innerW*0.05+avatarR;
+  const avatarCy = cy+avatarR;
+  ctx.fillStyle = '#e8a4b0';
+  ctx.beginPath(); ctx.arc(avatarCx, avatarCy, avatarR, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#c2185b';
+  ctx.beginPath(); ctx.arc(avatarCx, avatarCy-avatarR*0.15, avatarR*0.42, 0, Math.PI*2); ctx.fill();
+
+  const statLabels = [
+    {n:String(postsCount), l:'Posts'},
+    {n:'757', l:'Followers'},
+    {n:'568', l:'Following'},
+  ];
+  const statStartX = avatarCx+avatarR+innerW*0.06;
+  const statGap = (innerW*0.9 - (statStartX-innerX)) / 3;
+  statLabels.forEach((s,i)=>{
+    const sx = statStartX + i*statGap + statGap/2;
+    ctx.fillStyle = '#111';
+    ctx.font = '700 ' + Math.round(innerW*0.05) + 'px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(s.n, sx, avatarCy-avatarR*0.15);
+    ctx.fillStyle = '#555';
+    ctx.font = '400 ' + Math.round(innerW*0.033) + 'px -apple-system, sans-serif';
+    ctx.fillText(s.l, sx, avatarCy-avatarR*0.15+innerH*0.032);
+  });
+
+  // name + bio
+  cy = avatarCy+avatarR+innerH*0.028;
+  ctx.fillStyle = '#111'; ctx.textAlign = 'left';
+  ctx.font = '700 ' + Math.round(innerW*0.038) + 'px -apple-system, sans-serif';
+  ctx.fillText('User Name', innerX+innerW*0.05, cy);
+  ctx.fillStyle = '#555';
+  ctx.font = '400 ' + Math.round(innerW*0.033) + 'px -apple-system, sans-serif';
+  ctx.fillText('Lorem ipsum dolor', innerX+innerW*0.05, cy+innerH*0.03);
+
+  // edit profile button
+  cy += innerH*0.05;
+  const btnH = innerH*0.045;
+  ctx.strokeStyle = '#ccc'; ctx.lineWidth = 2;
+  roundRect(ctx, innerX+innerW*0.05, cy, innerW*0.9, btnH, 8); ctx.stroke();
+  ctx.fillStyle = '#111';
+  ctx.font = '600 ' + Math.round(innerW*0.036) + 'px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Edit Profile', innerX+innerW/2, cy+btnH*0.68);
+
+  // highlight circles
+  cy += btnH + innerH*0.03;
+  const hlR = innerW*0.075;
+  const hlColors = ['#111','#444','#d9433c','#fff'];
+  hlColors.forEach((c,i)=>{
+    const hx = innerX+innerW*0.05+hlR+i*(hlR*2+innerW*0.03);
+    ctx.fillStyle = c;
+    ctx.beginPath(); ctx.arc(hx, cy+hlR, hlR, 0, Math.PI*2); ctx.fill();
+    if(c==='#fff'){ ctx.strokeStyle='#ddd'; ctx.lineWidth=1.5; ctx.stroke(); }
+  });
+  cy += hlR*2 + innerH*0.02;
+
+  // tab row (grid icon underline)
+  ctx.strokeStyle = '#111'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(innerX+innerW*0.05, cy+innerH*0.018);
+  ctx.lineTo(innerX+innerW*0.05+innerW*0.3, cy+innerH*0.018);
+  ctx.stroke();
+  cy += innerH*0.03;
+
+  // 3-column square post grid, tiap gambar 1:1 (cover-crop, ga distorsi)
+  const gridTop = cy;
+  const gridBottom = innerY+innerH - innerH*0.01;
+  const gCols = 3;
+  const cellW = innerW / gCols;
+  const cellGap = 2;
+  const rowsFit = Math.floor((gridBottom-gridTop) / cellW) || 1;
+  let idx = 0;
+  for(let r2=0; r2<rowsFit; r2++){
+    for(let c2=0; c2<gCols; c2++){
+      const cx = innerX + c2*cellW;
+      const cyCell = gridTop + r2*cellW;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(cx, cyCell, cellW-cellGap, cellW-cellGap);
+      ctx.clip();
+      if(images && images[idx % Math.max(images.length,1)] && images.length){
+        const im = images[idx % images.length].img;
+        const scale = Math.max((cellW-cellGap)/im.naturalWidth, (cellW-cellGap)/im.naturalHeight);
+        const iw = im.naturalWidth*scale, ih = im.naturalHeight*scale;
+        ctx.drawImage(im, cx+(cellW-cellGap-iw)/2, cyCell+(cellW-cellGap-ih)/2, iw, ih);
+      } else {
+        ctx.fillStyle = idx%2===0 ? '#d9433c' : '#222';
+        ctx.fillRect(cx, cyCell, cellW-cellGap, cellW-cellGap);
+      }
+      ctx.restore();
+      idx++;
+    }
+  }
+
+  ctx.restore(); // release screen clip
+  ctx.restore();
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+function renderScreenshot(){
+  const portrait = parseInt(document.getElementById('ss-portrait').value,10) || 0;
+  const square = parseInt(document.getElementById('ss-square').value,10) || 0;
+  const story = parseInt(document.getElementById('ss-story').value,10) || 0;
+  const total = portrait + square + story;
+  const bannerText = document.getElementById('ss-banner').value.trim() || 'FREE TEMPLATE GUIDE PERFECT FOR BEGINNERS';
+
+  ssCanvas.width = SS_W; ssCanvas.height = SS_H;
+  ssCtx.fillStyle = '#ffffff';
+  ssCtx.fillRect(0,0,SS_W,SS_H);
+
+  const leftW = SS_W*0.44;
+
+  // banner
+  const bannerH = 56;
+  ssCtx.fillStyle = '#d9433c';
+  ssCtx.fillRect(70, 70, Math.min(leftW-40, 620), bannerH);
+  ssCtx.fillStyle = '#fff';
+  ssCtx.font = '700 20px -apple-system, sans-serif';
+  ssCtx.textAlign = 'left';
+  ssCtx.fillText(bannerText.toUpperCase(), 90, 70+bannerH/2+7);
+
+  // heading
+  ssCtx.fillStyle = '#111';
+  ssCtx.font = '800 58px -apple-system, sans-serif';
+  ssCtx.fillText("WHAT'S INCLUDED", 70, 230);
+
+  // total templates
+  ssCtx.fillStyle = '#d9433c';
+  ssCtx.font = '800 46px -apple-system, sans-serif';
+  ssCtx.fillText(total + ' TEMPLATES', 70, 320);
+  ssCtx.fillStyle = '#555';
+  ssCtx.font = 'italic 22px -apple-system, sans-serif';
+  ssCtx.fillText('No Canva Pro required', 70, 358);
+
+  // breakdown lines
+  const lines = [
+    {n:portrait, label:'Portrait (4:5)', sub:'Ideal for Instagram/Facebook feed posts'},
+    {n:square, label:'Square (1:1)', sub:'Perfect for Instagram, Facebook, Pinterest'},
+    {n:story, label:'Story (9:16)', sub:'Great for IG Stories, Reels covers & Facebook Stories'},
+  ];
+  let ly = 430;
+  lines.forEach(l=>{
+    ssCtx.fillStyle = '#111';
+    ssCtx.font = '700 30px -apple-system, sans-serif';
+    ssCtx.fillText(l.n + ' ' + l.label, 70, ly);
+    ssCtx.fillStyle = '#777';
+    ssCtx.font = '400 19px -apple-system, sans-serif';
+    ssCtx.fillText(l.sub, 70, ly+30);
+    ly += 92;
+  });
+
+  // right side: 1 HP gaya Instagram profile, grid post 1:1 (prioritas gambar Square, fallback ke semua)
+  const sets = buildClassifiedSets();
+  const gridImages = sets.square.length ? sets.square : sets.all;
+  const phoneW = SS_W*0.30, phoneH = SS_H*0.82;
+  const phoneX = SS_W - phoneW - 90;
+  const phoneY = (SS_H - phoneH)/2;
+  drawInstagramPhone(ssCtx, phoneX, phoneY, phoneW, phoneH, gridImages, total);
+
+  ssCanvas.style.display = 'block';
+  ssCanvas.dataset.rendered = '1';
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('ss-dl-png').disabled = false;
+  document.getElementById('ss-dl-jpg').disabled = false;
+}
+document.getElementById('ss-generate').addEventListener('click', renderScreenshot);
+document.getElementById('ss-dl-png').addEventListener('click', ()=>downloadCanvasAs(ssCanvas,'png','levram-screenshot'));
+document.getElementById('ss-dl-jpg').addEventListener('click', ()=>downloadCanvasAs(ssCanvas,'jpg','levram-screenshot'));
+
+// ══════════════════════════════════════════════════════════════
+// PDF — pakai Thumbnail sebagai cover + link Drive
+// ══════════════════════════════════════════════════════════════
+const driveLinkInput = document.getElementById('drive-link');
+driveLinkInput.addEventListener('input', ()=>{
+  document.getElementById('generate-pdf-btn').disabled = !(lastThumbCanvasDataUrl && driveLinkInput.value.trim());
+});
+
+document.getElementById('generate-pdf-btn').addEventListener('click', ()=>{
+  if(!lastThumbCanvasDataUrl){ alert('Generate Thumbnail dulu di tab Thumbnail.'); return; }
+  const link = driveLinkInput.value.trim();
+  if(!link){ alert('Isi link Google Drive dulu.'); return; }
+
+  try{
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'px', format:[THUMB_W,THUMB_H], compress:true});
+    doc.addImage(lastThumbCanvasDataUrl, 'PNG', 0, 0, THUMB_W, THUMB_H, undefined, 'MEDIUM');
+
+    const boxH = THUMB_H*0.28, boxMarginX = THUMB_W*0.08;
+    const boxW = THUMB_W - boxMarginX*2, boxY = (THUMB_H-boxH)/2;
+    doc.setFillColor(15,15,17);
+    doc.roundedRect(boxMarginX, boxY, boxW, boxH, 18, 18, 'F');
+    const labelSize = Math.max(22, THUMB_W*0.045);
+    doc.setFont('helvetica','bold'); doc.setFontSize(labelSize);
+    doc.setTextColor(90,170,255);
+    doc.textWithLink('Download Here', THUMB_W/2, boxY+boxH*0.56, {align:'center', url:link});
+
+    doc.save('levram-asset-link-'+Date.now()+'.pdf');
+    const statusEl = document.getElementById('pdf-status');
+    statusEl.classList.add('show');
+    setTimeout(()=>statusEl.classList.remove('show'), 3000);
+  }catch(err){
+    alert('Gagal membuat PDF: '+err.message);
+  }
+});
+
+// ── Reset ──────────────────────────────────────────────────────
+document.getElementById('clear-btn').addEventListener('click', ()=>{
+  if(!confirm('Reset semua gambar Dark/Light?')) return;
+  darkImages = []; lightImages = [];
+  document.getElementById('dark-input').value = '';
+  document.getElementById('light-input').value = '';
+  refreshUploads();
+  stopVideoAnim();
+  ['canvas-thumb-all','canvas-thumb-square','canvas-thumb-portrait','canvas-thumb-story','canvas-video','canvas-ss'].forEach(id=>{
+    const c = document.getElementById(id);
+    c.dataset.rendered = '';
+  });
+  document.getElementById('thumb-grid-wrap').style.display = 'none';
+  document.getElementById('thumb-grid-wrap').dataset.rendered = '';
+  document.getElementById('canvas-video').style.display = 'none';
+  document.getElementById('canvas-ss').style.display = 'none';
+  document.getElementById('empty-state').style.display = '';
+  ['video-record','video-dl-png','video-stop','ss-dl-png','ss-dl-jpg','generate-pdf-btn'].forEach(id=>{
+    document.getElementById(id).disabled = true;
+  });
+  lastThumbCanvasDataUrl = null;
+});
+
+// ── Init ───────────────────────────────────────────────────────
+refreshUploads();
+showTab('thumb');
+</script>
+</body>
+</html>

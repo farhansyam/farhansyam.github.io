@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LevramStudio — Social Media Prompt Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1220;
+    --surface:#121B30;
+    --surface-2:#182240;
+    --border:rgba(255,255,255,0.08);
+    --border-strong:rgba(255,255,255,0.16);
+    --text-primary:#F2F5FA;
+    --text-secondary:#93A0B8;
+    --text-muted:#5E6B85;
+    --accent:#F0B429;
+    --accent-dim:#8A6620;
+    --dark-tag-bg:#26325A;
+    --dark-tag-text:#B9C4E8;
+    --light-tag-bg:#3A331A;
+    --light-tag-text:#F0CD73;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text-primary);
+    font-family:'Inter',sans-serif;
+    padding:2.5rem 1.5rem 4rem;
+  }
+  .wrap{max-width:1080px;margin:0 auto;}
+
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+    font-size:clamp(28px,4vw,42px);
+    margin:0 0 8px;
+    line-height:1.05;
+  }
+  .sub{
+    color:var(--text-secondary);
+    font-size:14.5px;
+    line-height:1.6;
+    max-width:680px;
+    margin:0 0 32px;
+  }
+
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:22px 24px;
+    margin-bottom:28px;
+  }
+  .panel-title{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    text-transform:uppercase;
+    font-size:13px;
+    letter-spacing:0.08em;
+    color:var(--text-secondary);
+    margin:0 0 18px;
+  }
+  .controls{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px;
+  }
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--text-secondary);
+    margin-bottom:6px;
+    font-weight:500;
+  }
+  select, input[type=text], input[type=number]{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border-strong);
+    color:var(--text-primary);
+    padding:10px 12px;
+    border-radius:8px;
+    font-size:14px;
+    font-family:'Inter',sans-serif;
+  }
+  select:focus, input:focus{
+    outline:2px solid var(--accent);
+    outline-offset:1px;
+  }
+
+  .stats{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:18px 0 0;
+  }
+  .stat-chip{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-secondary);
+  }
+  .stat-chip b{color:var(--text-primary);}
+
+  .actions{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+  button.primary{
+    background:var(--accent);
+    color:#241a04;
+    border:none;
+    font-weight:600;
+    font-size:13.5px;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  button.primary:hover{filter:brightness(1.08);}
+  button.ghost{
+    background:transparent;
+    color:var(--text-secondary);
+    border:1px solid var(--border-strong);
+    font-size:13.5px;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  button.ghost:hover{color:var(--text-primary);border-color:var(--text-secondary);}
+
+  .groupby-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+  }
+  .groupby-label{
+    font-size:12.5px;
+    color:var(--text-secondary);
+  }
+  .groupby-toggle{
+    display:flex;
+    background:var(--surface-2);
+    border:1px solid var(--border-strong);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .groupby-btn{
+    background:transparent;
+    border:none;
+    color:var(--text-secondary);
+    font-size:12.5px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .groupby-btn.active{
+    background:var(--accent);
+    color:#241a04;
+    font-weight:600;
+  }
+
+  .main-search-wrap{
+    margin-bottom:22px;
+    position:relative;
+  }
+  .main-search{
+    width:100%;
+    background:var(--surface);
+    border:1px solid var(--border-strong);
+    color:var(--text-primary);
+    padding:12px 14px;
+    border-radius:10px;
+    font-size:13.5px;
+    font-family:'Inter',sans-serif;
+  }
+  .main-search:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .main-search-count{
+    font-size:11.5px;
+    color:var(--text-muted);
+    margin-top:6px;
+  }
+  .row-card.hidden, .group-block.hidden{display:none;}
+
+  .listing-block{ margin-bottom:20px; }
+  .listing-block:last-child{ margin-bottom:0; }
+  .listing-block-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:8px;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--text-secondary);
+  }
+  .listing-count{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--text-muted);
+    font-weight:400;
+    margin-left:6px;
+  }
+  .listing-textarea{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    color:var(--text-primary);
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    line-height:1.6;
+    padding:12px 14px;
+    resize:vertical;
+  }
+  .tag-chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:10px;
+  }
+  .tag-chip{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    padding:4px 9px;
+    border-radius:999px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-secondary);
+  }
+  .tag-chip.warn{ border-color:#e85d75; color:#e85d75; }
+
+  .row-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 18px;
+    margin-bottom:12px;
+    display:grid;
+    grid-template-columns:36px 1fr auto;
+    gap:14px;
+    align-items:start;
+  }
+  .row-no{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--text-muted);
+    font-size:13px;
+    padding-top:3px;
+  }
+  .row-main{min-width:0;}
+  .row-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    padding:3px 9px;
+    border-radius:5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  .badge.size{background:var(--surface-2);color:var(--text-secondary);border:1px solid var(--border);}
+  .badge.mode-dark{background:var(--dark-tag-bg);color:var(--dark-tag-text);}
+  .badge.mode-light{background:var(--light-tag-bg);color:var(--light-tag-text);}
+  .prompt-text{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.2px;
+    line-height:1.6;
+    color:var(--text-secondary);
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 12px;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .row-copy{
+    display:flex;
+    align-items:flex-start;
+    padding-top:2px;
+  }
+  .copy-btn{
+    background:var(--surface-2);
+    border:1px solid var(--border-strong);
+    color:var(--text-secondary);
+    font-size:12px;
+    padding:8px 12px;
+    border-radius:7px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    white-space:nowrap;
+  }
+  .copy-btn:hover{color:var(--text-primary);border-color:var(--accent);}
+  .copy-btn.copied-done{
+    background:var(--accent);
+    color:#241a04;
+    border-color:var(--accent);
+    font-weight:600;
+  }
+  .copy-btn.copied-done:hover{color:#241a04;}
+
+  .group-block{margin-bottom:26px;}
+  .group-block-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--border);
+  }
+  .group-block-title{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    font-size:17px;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+  }
+  .group-block-count{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--text-muted);
+  }
+
+  footer{
+    margin-top:32px;
+    color:var(--text-muted);
+    font-size:12.5px;
+    line-height:1.7;
+    border-top:1px solid var(--border);
+    padding-top:18px;
+  }
+
+  .flying-stats{
+    position:fixed;
+    bottom:18px;
+    right:18px;
+    width:280px;
+    background:var(--surface);
+    border:1px solid var(--border-strong);
+    border-radius:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+    padding:14px 16px;
+    z-index:1000;
+    font-family:'Inter',sans-serif;
+  }
+  .fs-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .fs-total{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+  }
+  .fs-total b{color:var(--accent);}
+  .fs-toggle{
+    background:transparent;
+    border:none;
+    color:var(--text-secondary);
+    font-size:11px;
+    cursor:pointer;
+    font-family:'JetBrains Mono',monospace;
+    padding:2px 6px;
+  }
+  .fs-toggle:hover{color:var(--text-primary);}
+  .fs-row-label{
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--text-muted);
+    margin:8px 0 4px;
+  }
+  .fs-sizes{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-bottom:4px;
+  }
+  .fs-chip{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    padding:4px 8px;
+    border-radius:6px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-secondary);
+  }
+  .fs-chip.dark-chip{background:var(--dark-tag-bg);color:var(--dark-tag-text);border-color:transparent;}
+  .fs-chip.light-chip{background:var(--light-tag-bg);color:var(--light-tag-text);border-color:transparent;}
+  .fs-bar-track{
+    height:5px;
+    border-radius:3px;
+    background:var(--surface-2);
+    overflow:hidden;
+    margin:8px 0 4px;
+  }
+  .fs-bar-fill{
+    height:100%;
+    background:var(--accent);
+    transition:width 0.2s ease;
+  }
+  .fs-detail{
+    max-height:220px;
+    overflow-y:auto;
+    border-top:1px solid var(--border);
+    padding-top:8px;
+    margin-top:6px;
+  }
+  .fs-detail-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:11.5px;
+    color:var(--text-secondary);
+    padding:3px 0;
+  }
+  .fs-detail-row b{color:var(--text-primary);font-weight:500;}
+  .fs-detail-row.hidden{display:none;}
+  .fs-empty{font-size:11px;color:var(--text-muted);padding:6px 0;}
+  .fs-reset{
+    width:100%;
+    margin-top:10px;
+    background:transparent;
+    border:1px solid var(--border-strong);
+    color:var(--text-muted);
+    font-size:11px;
+    padding:6px;
+    border-radius:6px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .fs-reset:hover{color:var(--text-secondary);border-color:var(--text-secondary);}
+  .fs-search{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border-strong);
+    color:var(--text-primary);
+    padding:6px 10px;
+    border-radius:6px;
+    font-size:11.5px;
+    font-family:'Inter',sans-serif;
+    margin-top:6px;
+  }
+  .fs-search:focus{outline:2px solid var(--accent);outline-offset:1px;}
+
+  @media (max-width:560px){
+    .row-card{grid-template-columns:1fr;}
+    .row-no{display:none;}
+    .flying-stats{width:calc(100% - 36px);right:18px;left:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">LevramStudio &mdash; Production Tool</p>
+  <h1>Social Media Prompt Generator</h1>
+  <p class="sub">Pilih Master Kategori (industri) dan Sub-nya, lalu warna aksen. Tiap kategori generate base design di <b>Square 1080x1080 aja</b> — nanti tinggal di-resize/extend di Canva (Magic Expand) jadi Portrait &amp; Story, jadi 1 generate = 3 template final. Dark/Light diacak per generate tapi totalnya tetap 50:50. Pose, komposisi, dan teks dibebasin ke ChatGPT — cuma kata kunci arah kreatif yang gantian tiap generate biar hasilnya tetap variatif.</p>
+
+  <div class="panel">
+    <p class="panel-title">Pengaturan</p>
+    <div class="controls">
+      <div class="field">
+        <label for="masterSel">Master Kategori</label>
+        <select id="masterSel"></select>
+      </div>
+      <div class="field">
+        <label for="subSel">Sub Kategori</label>
+        <select id="subSel"></select>
+      </div>
+      <div class="field">
+        <label for="colorSel">Warna aksen</label>
+        <select id="colorSel"></select>
+      </div>
+      <div class="field">
+        <label for="genderSel">Gender subjek</label>
+        <select id="genderSel">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="teamInput">Nama brand/bisnis (opsional)</label>
+        <input type="text" id="teamInput" placeholder="contoh: LEVRAM">
+      </div>
+      <div class="field">
+        <label for="baseCountInput">Jumlah base design (Square)</label>
+        <input type="number" class="num-input-like" id="baseCountInput" value="30" min="5" max="150">
+      </div>
+    </div>
+    <div class="stats" id="statsRow"></div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" id="copyAllBtn">Copy semua prompt</button>
+    <button class="ghost" id="reshuffleBtn">Acak ulang Dark/Light</button>
+    <button class="ghost" id="generateListingBtn">Generate Title / Desc / Tags</button>
+    <button class="ghost" id="scrollTop">Ke atas</button>
+  </div>
+
+  <div class="panel" id="listingPanel" style="display:none">
+    <p class="panel-title">Etsy Listing — Title, Description &amp; Tags</p>
+
+    <div class="listing-block">
+      <div class="listing-block-head">
+        <span>Title <span class="listing-count" id="titleCharCount"></span></span>
+        <button class="copy-btn" id="copyTitleBtn">Copy</button>
+      </div>
+      <textarea class="listing-textarea" id="listingTitle" rows="2" readonly></textarea>
+    </div>
+
+    <div class="listing-block">
+      <div class="listing-block-head">
+        <span>Description</span>
+        <button class="copy-btn" id="copyDescBtn">Copy</button>
+      </div>
+      <textarea class="listing-textarea" id="listingDesc" rows="14" readonly></textarea>
+    </div>
+
+    <div class="listing-block">
+      <div class="listing-block-head">
+        <span>Tags <span class="listing-count" id="tagCountLabel"></span></span>
+        <button class="copy-btn" id="copyTagsBtn">Copy</button>
+      </div>
+      <textarea class="listing-textarea" id="listingTags" rows="3" readonly></textarea>
+      <div class="tag-chip-row" id="tagChipRow"></div>
+    </div>
+  </div>
+
+  <div class="main-search-wrap">
+    <input type="text" id="mainSearch" class="main-search" placeholder="Cari prompt... (nama kategori atau Dark/Light)">
+    <div class="main-search-count" id="mainSearchCount"></div>
+  </div>
+
+  <div id="tableWrap"></div>
+
+  <footer id="footerNote"></footer>
+
+</div>
+
+<div class="flying-stats" id="flyingStats">
+  <div class="fs-header">
+    <span class="fs-total" id="fsTotal">0 / 0 copied</span>
+    <button class="fs-toggle" id="fsToggle">Detail ▾</button>
+  </div>
+  <div class="fs-bar-track"><div class="fs-bar-fill" id="fsBarFill" style="width:0%"></div></div>
+  <div class="fs-row-label">Per ukuran</div>
+  <div class="fs-sizes" id="fsSizes"></div>
+  <div class="fs-row-label">Dark / Light</div>
+  <div class="fs-sizes" id="fsDarkLight"></div>
+  <input type="text" id="fsSearch" class="fs-search" placeholder="Cari kategori..." style="display:none">
+  <div id="fsDetail" class="fs-detail" style="display:none"></div>
+  <button class="fs-reset" id="fsReset">Reset progress copy</button>
+</div>
+
+<script>
+function subs(list){ return list; }
+
+const MASTERS = {
+  sport: {
+    label: "Sport",
+    hasPerson: true,
+    subs: [
+      {name:"Soccer", subject:"a photorealistic generic {gender} athlete in soccer kit and cleats, athletic build, generic facial features not resembling any real person", setting:"stadium"},
+      {name:"Basketball", subject:"a photorealistic generic {gender} athlete in basketball jersey and shorts, athletic build, generic facial features not resembling any real person", setting:"indoor basketball court"},
+      {name:"American Football", subject:"a photorealistic generic {gender} athlete in football uniform, helmet and pads, athletic build, generic facial features not resembling any real person", setting:"football field stadium"},
+      {name:"Baseball", subject:"a photorealistic generic {gender} athlete in baseball uniform and cap, athletic build, generic facial features not resembling any real person", setting:"baseball diamond field"},
+      {name:"Softball", subject:"a photorealistic generic {gender} athlete in softball uniform and cap, athletic build, generic facial features not resembling any real person", setting:"softball diamond field"},
+      {name:"Volleyball", subject:"a photorealistic generic {gender} athlete in volleyball jersey and knee pads, athletic build, generic facial features not resembling any real person", setting:"indoor volleyball court"},
+      {name:"Track and Field", subject:"a photorealistic generic {gender} athlete in running singlet and track spikes, athletic build, generic facial features not resembling any real person", setting:"running track"},
+      {name:"Cross Country", subject:"a photorealistic generic {gender} athlete in running shorts and singlet, athletic build, generic facial features not resembling any real person", setting:"outdoor trail course"},
+      {name:"Swimming", subject:"a photorealistic generic {gender} athlete in competitive swimsuit, cap and goggles, athletic build, generic facial features not resembling any real person", setting:"indoor swimming pool"},
+      {name:"Tennis", subject:"a photorealistic generic {gender} athlete in tennis polo and shorts with a racket, athletic build, generic facial features not resembling any real person", setting:"outdoor tennis court"},
+      {name:"Golf", subject:"a photorealistic generic {gender} athlete in golf polo and cap with a golf club, athletic build, generic facial features not resembling any real person", setting:"outdoor golf course"},
+      {name:"Ice Hockey", subject:"a photorealistic generic {gender} athlete in ice hockey jersey and pads, athletic build, generic facial features not resembling any real person", setting:"indoor ice rink"},
+      {name:"Field Hockey", subject:"a photorealistic generic {gender} athlete in field hockey jersey and shin guards, athletic build, generic facial features not resembling any real person", setting:"outdoor turf field"},
+      {name:"Lacrosse", subject:"a photorealistic generic {gender} athlete in lacrosse jersey, helmet and stick, athletic build, generic facial features not resembling any real person", setting:"outdoor lacrosse field"},
+      {name:"Rugby", subject:"a photorealistic generic {gender} athlete in rugby jersey and shorts, athletic build, generic facial features not resembling any real person", setting:"outdoor rugby field"},
+      {name:"Wrestling", subject:"a photorealistic generic {gender} athlete in a wrestling singlet, athletic build, generic facial features not resembling any real person", setting:"wrestling mat gymnasium"},
+      {name:"Gymnastics", subject:"a photorealistic generic {gender} athlete in a gymnastics leotard, athletic build, generic facial features not resembling any real person", setting:"gymnasium with equipment"},
+      {name:"Cheer and Dance", subject:"a photorealistic generic {gender} athlete in a cheer uniform with pom poms, athletic build, generic facial features not resembling any real person", setting:"gymnasium"},
+      {name:"Boxing", subject:"a photorealistic generic {gender} athlete in boxing gloves and shorts, athletic build, generic facial features not resembling any real person", setting:"boxing ring gym"},
+      {name:"Cycling", subject:"a photorealistic generic {gender} athlete in cycling jersey, helmet and bicycle, athletic build, generic facial features not resembling any real person", setting:"outdoor road course"},
+      {name:"Rowing", subject:"a photorealistic generic {gender} athlete in rowing uniform with an oar, athletic build, generic facial features not resembling any real person", setting:"river or lake course"},
+      {name:"Badminton", subject:"a photorealistic generic {gender} athlete in badminton polo and shorts with a racket, athletic build, generic facial features not resembling any real person", setting:"indoor badminton court"},
+      {name:"Skateboarding", subject:"a photorealistic generic {gender} athlete in streetwear and helmet with a skateboard, athletic build, generic facial features not resembling any real person", setting:"outdoor skate park"},
+      {name:"Esports", subject:"a photorealistic generic {gender} athlete in a gaming team jersey, generic facial features not resembling any real person", setting:"gaming setup with monitors and rgb lighting"},
+    ],
+    categories: [
+      {no:1, cat:"Game Day Graphics", qty:7},{no:2, cat:"Match Week Posts", qty:5},
+      {no:3, cat:"Athlete Spotlights", qty:7},{no:4, cat:"Player Statistics Graphics", qty:5},
+      {no:5, cat:"Goal Announcements", qty:6},{no:6, cat:"Team Roster Posts", qty:5},
+      {no:7, cat:"Starting Lineup Templates", qty:5},{no:8, cat:"Team Schedule Templates", qty:4},
+      {no:9, cat:"Season Schedule Graphics", qty:4},{no:10, cat:"MVP of the Match Posts", qty:5},
+      {no:11, cat:"Full Time Results", qty:5},{no:12, cat:"Half Time Updates", qty:4},
+      {no:13, cat:"Substitution Graphics", qty:4},{no:14, cat:"Next Match Announcements", qty:5},
+      {no:15, cat:"Birthday Posts", qty:4},{no:16, cat:"Countdown / Up Next", qty:4},
+      {no:17, cat:"Tryouts Announcement", qty:3},{no:18, cat:"Sponsor Shoutout", qty:3},
+    ],
+    noModelCategories: ["Team Schedule Templates", "Season Schedule Graphics"],
+  },
+
+  kuliner: {
+    label: "Kuliner / F&B",
+    hasPerson: false,
+    subs: [
+      {name:"Restaurant", subject:"an elegant plated signature dish with garnish, shallow depth of field", setting:"upscale restaurant dining table"},
+      {name:"Cafe", subject:"a specialty coffee drink and a pastry arranged aesthetically", setting:"cozy cafe counter"},
+      {name:"Bakery", subject:"freshly baked bread and pastries arranged on a wooden board", setting:"bakery display counter"},
+      {name:"Food Truck", subject:"street food served in plain unbranded takeaway packaging", setting:"food truck serving window"},
+      {name:"Catering", subject:"a catering buffet spread with multiple dishes", setting:"event catering table"},
+    ],
+    categories: [
+      {no:1, cat:"Menu Highlight", qty:8},{no:2, cat:"New Dish Launch", qty:6},
+      {no:3, cat:"Daily Special", qty:6},{no:4, cat:"Behind The Kitchen", qty:5},
+      {no:5, cat:"Chef / Owner Spotlight", qty:4},{no:6, cat:"Customer Review", qty:6},
+      {no:7, cat:"Combo Deal Promo", qty:5},{no:8, cat:"Weekend Promo", qty:5},
+      {no:9, cat:"Order Now / Delivery", qty:5},{no:10, cat:"Ingredient Spotlight", qty:4},
+      {no:11, cat:"Grand Opening Announcement", qty:3},{no:12, cat:"Catering Package Highlight", qty:4},
+      {no:13, cat:"Countdown / Coming Soon", qty:4},{no:14, cat:"Opening Hours", qty:3},
+    ],
+    noModelCategories: ["Opening Hours"],
+  },
+
+  it: {
+    label: "IT / Tech",
+    hasPerson: false,
+    subs: [
+      {name:"Website", subject:"a clean website interface mockup displayed on a laptop screen", setting:"modern minimal desk workspace"},
+      {name:"Mobile App", subject:"a mobile app interface mockup displayed on a smartphone screen", setting:"minimal flat-lay desk with accessories"},
+      {name:"SaaS", subject:"a dashboard interface mockup displayed on a laptop screen", setting:"modern office workspace"},
+      {name:"Game Dev", subject:"a video game interface mockup displayed on a gaming monitor", setting:"gaming desk setup with rgb lighting"},
+    ],
+    categories: [
+      {no:1, cat:"Feature Announcement", qty:8},{no:2, cat:"App Update / Changelog", qty:6},
+      {no:3, cat:"Tutorial / Tips", qty:6},{no:4, cat:"User Testimonial", qty:5},
+      {no:5, cat:"Milestone Announcement", qty:4},{no:6, cat:"Pricing / Plan Highlight", qty:5},
+      {no:7, cat:"Before-After Comparison", qty:4},{no:8, cat:"Launch Countdown", qty:4},
+      {no:9, cat:"Team Spotlight", qty:4},{no:10, cat:"Integration Announcement", qty:4},
+      {no:11, cat:"Case Study Highlight", qty:4},{no:12, cat:"Webinar / Event Announcement", qty:4},
+      {no:13, cat:"Maintenance Notice", qty:3},{no:14, cat:"Hiring / Career Post", qty:3},
+    ],
+    noModelCategories: ["Maintenance Notice"],
+  },
+
+  fashion: {
+    label: "Fashion & Apparel",
+    hasPerson: true,
+    subs: [
+      {name:"Streetwear", subject:"a photorealistic generic {gender} model wearing streetwear clothing, generic facial features not resembling any real person", setting:"urban street background"},
+      {name:"Boutique", subject:"a photorealistic generic {gender} model wearing an elegant boutique outfit, generic facial features not resembling any real person", setting:"boutique interior"},
+      {name:"Shoes", subject:"a close-up product shot of a stylish shoe", setting:"minimal studio background"},
+      {name:"Accessories", subject:"a close-up product shot of a fashion accessory", setting:"minimal studio background"},
+    ],
+    categories: [
+      {no:1, cat:"New Arrival", qty:8},{no:2, cat:"Outfit Of The Day", qty:6},
+      {no:3, cat:"Product Spotlight", qty:6},{no:4, cat:"Style Tips", qty:5},
+      {no:5, cat:"Flash Sale", qty:5},{no:6, cat:"Restock Announcement", qty:4},
+      {no:7, cat:"Customer Style Feature", qty:4},{no:8, cat:"Behind The Brand", qty:4},
+      {no:9, cat:"Lookbook Post", qty:5},{no:10, cat:"Seasonal Collection Launch", qty:5},
+      {no:11, cat:"Discount Code Promo", qty:5},{no:12, cat:"Countdown / Coming Soon", qty:4},
+      {no:13, cat:"Styling Combo", qty:4},{no:14, cat:"Size Guide", qty:3},
+    ],
+    noModelCategories: ["Size Guide"],
+  },
+
+  beauty: {
+    label: "Beauty & Skincare",
+    hasPerson: true,
+    subs: [
+      {name:"Skincare", subject:"a close-up product shot of a skincare bottle with soft natural lighting", setting:"minimal clean studio background"},
+      {name:"Makeup", subject:"a photorealistic generic {gender} model with an elegant makeup look, generic facial features not resembling any real person", setting:"beauty studio background"},
+      {name:"Hair Salon", subject:"a photorealistic generic {gender} model with a styled hairstyle, generic facial features not resembling any real person", setting:"hair salon interior"},
+      {name:"Nail Salon", subject:"a close-up shot of manicured nails with nail art", setting:"nail salon table setup"},
+    ],
+    categories: [
+      {no:1, cat:"New Product Launch", qty:7},{no:2, cat:"Before-After Transformation", qty:6},
+      {no:3, cat:"Tutorial / Tips", qty:6},{no:4, cat:"Customer Review", qty:5},
+      {no:5, cat:"Promo / Discount", qty:5},{no:6, cat:"Ingredient Spotlight", qty:4},
+      {no:7, cat:"Behind The Chair / Studio", qty:4},{no:8, cat:"Booking Reminder", qty:4},
+      {no:9, cat:"Seasonal Special", qty:4},{no:10, cat:"Countdown / Coming Soon", qty:4},
+      {no:11, cat:"Staff Spotlight", qty:3},{no:12, cat:"Loyalty Program", qty:3},
+      {no:13, cat:"Grand Opening", qty:3},
+    ],
+    noModelCategories: ["Booking Reminder","Loyalty Program"],
+  },
+
+  fitness: {
+    label: "Fitness & Gym",
+    hasPerson: true,
+    subs: [
+      {name:"Personal Trainer", subject:"a photorealistic generic {gender} personal trainer in athletic wear demonstrating an exercise, generic facial features not resembling any real person", setting:"modern gym interior"},
+      {name:"Gym / Studio", subject:"a photorealistic generic {gender} person working out in a gym, generic facial features not resembling any real person", setting:"gym interior with equipment"},
+      {name:"Yoga", subject:"a photorealistic generic {gender} person in a yoga pose, generic facial features not resembling any real person", setting:"serene yoga studio"},
+      {name:"Nutrition Coach", subject:"a healthy meal prep spread with fresh ingredients", setting:"clean kitchen counter"},
+    ],
+    categories: [
+      {no:1, cat:"Workout Of The Day", qty:8},{no:2, cat:"Client Transformation", qty:6},
+      {no:3, cat:"Class Schedule", qty:5},{no:4, cat:"Membership Promo", qty:6},
+      {no:5, cat:"Trainer Spotlight", qty:4},{no:6, cat:"Nutrition Tip", qty:5},
+      {no:7, cat:"Motivational Quote", qty:5},{no:8, cat:"New Class Announcement", qty:4},
+      {no:9, cat:"Challenge Announcement", qty:4},{no:10, cat:"Testimonial", qty:4},
+      {no:11, cat:"Booking Reminder", qty:3},{no:12, cat:"Grand Opening", qty:3},
+      {no:13, cat:"Countdown / Coming Soon", qty:4},{no:14, cat:"Equipment Spotlight", qty:3},
+    ],
+    noModelCategories: ["Class Schedule","Booking Reminder"],
+  },
+
+  realestate: {
+    label: "Real Estate",
+    hasPerson: true,
+    subs: [
+      {name:"Residential", subject:"an exterior photo of a modern residential house", setting:"suburban neighborhood street"},
+      {name:"Commercial", subject:"an exterior photo of a modern commercial building", setting:"city business district"},
+      {name:"Agent Personal Brand", subject:"a photorealistic generic {gender} real estate agent in professional attire, generic facial features not resembling any real person", setting:"office or open house setting"},
+    ],
+    categories: [
+      {no:1, cat:"New Listing", qty:8},{no:2, cat:"Open House Announcement", qty:6},
+      {no:3, cat:"Property Feature Highlight", qty:6},{no:4, cat:"Just Sold", qty:5},
+      {no:5, cat:"Price Drop", qty:4},{no:6, cat:"Neighborhood Spotlight", qty:5},
+      {no:7, cat:"Market Update", qty:4},{no:8, cat:"Client Testimonial", qty:5},
+      {no:9, cat:"Agent Introduction", qty:4},{no:10, cat:"Home Buying Tip", qty:4},
+      {no:11, cat:"Virtual Tour Announcement", qty:4},{no:12, cat:"Just Listed Countdown", qty:3},
+      {no:13, cat:"Anniversary / Milestone", qty:3},{no:14, cat:"Referral Program", qty:3},
+    ],
+    noModelCategories: ["Market Update","Price Drop"],
+  },
+
+  wedding: {
+    label: "Wedding & Event",
+    hasPerson: false,
+    subs: [
+      {name:"Wedding", subject:"a beautifully styled wedding table setting with florals and decor", setting:"wedding venue interior"},
+      {name:"Corporate Event", subject:"a professionally set up corporate event stage or booth", setting:"conference or corporate event hall"},
+      {name:"Birthday / Private Party", subject:"a festive birthday or private party setup with decorations", setting:"party venue interior"},
+    ],
+    categories: [
+      {no:1, cat:"Vendor Spotlight", qty:6},{no:2, cat:"Event Package Highlight", qty:6},
+      {no:3, cat:"Testimonial", qty:5},{no:4, cat:"Behind The Scenes", qty:5},
+      {no:5, cat:"Booking Reminder", qty:4},{no:6, cat:"Seasonal Promo", qty:5},
+      {no:7, cat:"Portfolio Highlight", qty:5},{no:8, cat:"Countdown To Event", qty:4},
+      {no:9, cat:"Client Love Note", qty:4},{no:10, cat:"Venue Spotlight", qty:4},
+      {no:11, cat:"Team Introduction", qty:3},{no:12, cat:"Grand Opening", qty:3},
+      {no:13, cat:"Referral Program", qty:3},
+    ],
+    noModelCategories: ["Booking Reminder"],
+  },
+
+  photography: {
+    label: "Photography & Videography",
+    hasPerson: false,
+    subs: [
+      {name:"Wedding", subject:"a beautifully composed candid wedding moment scene", setting:"wedding venue"},
+      {name:"Portrait", subject:"a professionally lit portrait photography scene", setting:"photography studio"},
+      {name:"Product", subject:"a professionally lit product photography setup", setting:"photography studio with product on a pedestal"},
+      {name:"Event", subject:"a dynamic event photography moment scene", setting:"event venue"},
+    ],
+    categories: [
+      {no:1, cat:"Portfolio Highlight", qty:8},{no:2, cat:"Behind The Lens", qty:6},
+      {no:3, cat:"Booking Reminder", qty:5},{no:4, cat:"Client Testimonial", qty:5},
+      {no:5, cat:"Package Pricing Highlight", qty:5},{no:6, cat:"Before-After Editing", qty:4},
+      {no:7, cat:"Session Announcement", qty:4},{no:8, cat:"Seasonal Promo", qty:5},
+      {no:9, cat:"Equipment Spotlight", qty:3},{no:10, cat:"Countdown To Shoot", qty:4},
+      {no:11, cat:"Referral Program", qty:3},{no:12, cat:"Grand Opening", qty:3},
+      {no:13, cat:"Anniversary / Milestone", qty:3},
+    ],
+    noModelCategories: ["Booking Reminder","Package Pricing Highlight"],
+  },
+
+  education: {
+    label: "Education / Course",
+    hasPerson: true,
+    subs: [
+      {name:"Online Course", subject:"a laptop displaying an online course interface on a desk", setting:"cozy study desk setup"},
+      {name:"Tutoring", subject:"a photorealistic generic {gender} tutor helping a student study, generic facial features not resembling any real person", setting:"study room"},
+      {name:"School / Bootcamp", subject:"a group of generic students in a classroom or bootcamp setting, generic facial features not resembling any real person", setting:"classroom or bootcamp venue"},
+    ],
+    categories: [
+      {no:1, cat:"New Course Launch", qty:8},{no:2, cat:"Enrollment Open", qty:6},
+      {no:3, cat:"Student Testimonial", qty:6},{no:4, cat:"Curriculum Highlight", qty:5},
+      {no:5, cat:"Instructor Spotlight", qty:4},{no:6, cat:"Free Class / Webinar", qty:5},
+      {no:7, cat:"Early Bird Discount", qty:5},{no:8, cat:"Success Story", qty:5},
+      {no:9, cat:"Class Schedule", qty:4},{no:10, cat:"Countdown To Enrollment Deadline", qty:4},
+      {no:11, cat:"Study Tip", qty:4},{no:12, cat:"Certificate / Graduation", qty:3},
+      {no:13, cat:"Referral Program", qty:3},{no:14, cat:"Grand Opening", qty:3},
+    ],
+    noModelCategories: ["Class Schedule","Early Bird Discount"],
+  },
+
+  travel: {
+    label: "Travel & Tourism",
+    hasPerson: false,
+    subs: [
+      {name:"Travel Agent", subject:"a scenic travel destination landscape photo", setting:"tropical or scenic destination"},
+      {name:"Hotel / Resort", subject:"an inviting hotel or resort exterior and pool photo", setting:"resort poolside"},
+      {name:"Tour Guide", subject:"a scenic tour destination photo with a small generic {gender} tour guide figure, generic facial features not resembling any real person", setting:"tourist landmark area"},
+    ],
+    categories: [
+      {no:1, cat:"Destination Spotlight", qty:8},{no:2, cat:"Travel Package Promo", qty:6},
+      {no:3, cat:"Limited Time Deal", qty:5},{no:4, cat:"Customer Travel Story", qty:5},
+      {no:5, cat:"Itinerary Highlight", qty:5},{no:6, cat:"Booking Reminder", qty:4},
+      {no:7, cat:"Seasonal Promo", qty:5},{no:8, cat:"Hotel / Resort Feature", qty:4},
+      {no:9, cat:"Tour Announcement", qty:4},{no:10, cat:"Countdown To Departure", qty:4},
+      {no:11, cat:"Travel Tip", qty:4},{no:12, cat:"Referral Program", qty:3},
+      {no:13, cat:"Anniversary / Milestone", qty:3},{no:14, cat:"Grand Opening", qty:3},
+    ],
+    noModelCategories: ["Booking Reminder"],
+  },
+
+  automotive: {
+    label: "Automotive",
+    hasPerson: false,
+    subs: [
+      {name:"Car Dealer", subject:"a sleek generic car parked in a showroom, no visible brand logos", setting:"car showroom"},
+      {name:"Detailing", subject:"a car undergoing a detailing and wash service, no visible brand logos", setting:"detailing garage"},
+      {name:"Workshop / Bengkel", subject:"a car undergoing repair in a workshop, no visible brand logos", setting:"auto workshop"},
+    ],
+    categories: [
+      {no:1, cat:"New Arrival Vehicle", qty:7},{no:2, cat:"Promo / Discount", qty:6},
+      {no:3, cat:"Before-After Detailing", qty:6},{no:4, cat:"Customer Testimonial", qty:5},
+      {no:5, cat:"Service Highlight", qty:5},{no:6, cat:"Maintenance Tip", qty:4},
+      {no:7, cat:"Booking Reminder", qty:4},{no:8, cat:"Trade-In Offer", qty:4},
+      {no:9, cat:"Seasonal Promo", qty:4},{no:10, cat:"Countdown To Sale Event", qty:4},
+      {no:11, cat:"Staff Spotlight", qty:3},{no:12, cat:"Grand Opening", qty:3},
+      {no:13, cat:"Referral Program", qty:3},{no:14, cat:"Anniversary / Milestone", qty:3},
+    ],
+    noModelCategories: ["Booking Reminder","Maintenance Tip"],
+  },
+
+  health: {
+    label: "Health & Medical",
+    hasPerson: true,
+    subs: [
+      {name:"Clinic", subject:"a photorealistic generic {gender} doctor in a clinic setting, generic facial features not resembling any real person", setting:"modern clinic interior"},
+      {name:"Dentist", subject:"a photorealistic generic {gender} dentist with dental equipment, generic facial features not resembling any real person", setting:"dental clinic interior"},
+      {name:"Therapist", subject:"a photorealistic generic {gender} therapist in a calm consultation setting, generic facial features not resembling any real person", setting:"calm therapy office"},
+    ],
+    categories: [
+      {no:1, cat:"Service Highlight", qty:7},{no:2, cat:"Health Tip", qty:6},
+      {no:3, cat:"Patient Testimonial", qty:5},{no:4, cat:"Doctor / Staff Spotlight", qty:4},
+      {no:5, cat:"Booking Reminder", qty:4},{no:6, cat:"Promo / Discount", qty:5},
+      {no:7, cat:"New Service Announcement", qty:4},{no:8, cat:"Facility Tour", qty:4},
+      {no:9, cat:"Awareness Campaign", qty:4},{no:10, cat:"Countdown To Open House", qty:3},
+      {no:11, cat:"Insurance / Payment Info", qty:3},{no:12, cat:"Grand Opening", qty:3},
+      {no:13, cat:"Anniversary / Milestone", qty:3},
+    ],
+    noModelCategories: ["Booking Reminder","Insurance / Payment Info"],
+  },
+
+  finance: {
+    label: "Finance & Business",
+    hasPerson: true,
+    subs: [
+      {name:"Consultant", subject:"a photorealistic generic {gender} business consultant in professional attire in an office, generic facial features not resembling any real person", setting:"modern office"},
+      {name:"Coach", subject:"a photorealistic generic {gender} business coach presenting to a small group, generic facial features not resembling any real person", setting:"meeting room"},
+      {name:"Agency", subject:"a modern agency office workspace with a generic {gender} team member working, generic facial features not resembling any real person", setting:"agency office"},
+    ],
+    categories: [
+      {no:1, cat:"Service Highlight", qty:7},{no:2, cat:"Client Success Story", qty:6},
+      {no:3, cat:"Free Consultation Offer", qty:5},{no:4, cat:"Tip / Insight Post", qty:6},
+      {no:5, cat:"Case Study Highlight", qty:5},{no:6, cat:"Team Spotlight", qty:4},
+      {no:7, cat:"Webinar / Event Announcement", qty:4},{no:8, cat:"Testimonial", qty:5},
+      {no:9, cat:"Milestone Announcement", qty:4},{no:10, cat:"Countdown To Deadline", qty:4},
+      {no:11, cat:"Pricing / Package Highlight", qty:4},{no:12, cat:"Referral Program", qty:3},
+      {no:13, cat:"Grand Opening", qty:3},{no:14, cat:"Anniversary", qty:3},
+    ],
+    noModelCategories: ["Pricing / Package Highlight"],
+  },
+
+  pet: {
+    label: "Pet",
+    hasPerson: true,
+    subs: [
+      {name:"Pet Shop", subject:"an adorable generic pet (dog or cat) in a pet shop setting", setting:"pet shop interior"},
+      {name:"Grooming", subject:"a freshly groomed generic pet (dog or cat)", setting:"grooming salon"},
+      {name:"Vet", subject:"a generic pet (dog or cat) at a vet clinic with a photorealistic generic {gender} veterinarian, generic facial features not resembling any real person", setting:"vet clinic interior"},
+    ],
+    categories: [
+      {no:1, cat:"Product Highlight", qty:6},{no:2, cat:"Before-After Grooming", qty:6},
+      {no:3, cat:"Customer Pet Feature", qty:5},{no:4, cat:"Health Tip", qty:5},
+      {no:5, cat:"Promo / Discount", qty:5},{no:6, cat:"Booking Reminder", qty:4},
+      {no:7, cat:"New Arrival Product", qty:4},{no:8, cat:"Adoption / Rescue Spotlight", qty:4},
+      {no:9, cat:"Staff Spotlight", qty:3},{no:10, cat:"Countdown To Event", qty:3},
+      {no:11, cat:"Grand Opening", qty:3},{no:12, cat:"Referral Program", qty:3},
+      {no:13, cat:"Anniversary", qty:3},
+    ],
+    noModelCategories: ["Booking Reminder"],
+  },
+
+  music: {
+    label: "Music & Entertainment",
+    hasPerson: true,
+    subs: [
+      {name:"Musician", subject:"a photorealistic generic {gender} musician performing with an instrument, generic facial features not resembling any real person", setting:"concert stage with dramatic lighting"},
+      {name:"DJ", subject:"a photorealistic generic {gender} DJ performing at a mixing booth with dynamic lighting, generic facial features not resembling any real person", setting:"nightclub or event venue"},
+      {name:"Event Organizer", subject:"a professionally set up event stage with lighting, no people", setting:"event venue"},
+    ],
+    categories: [
+      {no:1, cat:"New Release Announcement", qty:7},{no:2, cat:"Show / Gig Announcement", qty:6},
+      {no:3, cat:"Behind The Scenes", qty:5},{no:4, cat:"Fan Testimonial", qty:4},
+      {no:5, cat:"Merch Highlight", qty:5},{no:6, cat:"Countdown To Show", qty:5},
+      {no:7, cat:"Ticket Sale Promo", qty:5},{no:8, cat:"Collaboration Announcement", qty:4},
+      {no:9, cat:"Milestone Announcement", qty:4},{no:10, cat:"Booking Reminder", qty:3},
+      {no:11, cat:"Anniversary", qty:3},{no:12, cat:"Grand Opening", qty:3},
+      {no:13, cat:"Referral Program", qty:3},
+    ],
+    noModelCategories: ["Booking Reminder","Merch Highlight"],
+  },
+
+  homeinterior: {
+    label: "Home & Interior",
+    hasPerson: false,
+    subs: [
+      {name:"Interior Design", subject:"a beautifully styled modern interior room", setting:"modern living room"},
+      {name:"Furniture", subject:"a stylish furniture piece in a styled room setting", setting:"styled interior room"},
+      {name:"Renovation", subject:"a home renovation before-after scene", setting:"under-renovation home interior"},
+    ],
+    categories: [
+      {no:1, cat:"Portfolio Highlight", qty:7},{no:2, cat:"Before-After Transformation", qty:6},
+      {no:3, cat:"Design Tip", qty:6},{no:4, cat:"Product / Furniture Spotlight", qty:5},
+      {no:5, cat:"Client Testimonial", qty:5},{no:6, cat:"Promo / Discount", qty:4},
+      {no:7, cat:"Free Consultation Offer", qty:4},{no:8, cat:"Seasonal Style Guide", qty:4},
+      {no:9, cat:"Project Announcement", qty:4},{no:10, cat:"Countdown To Launch", qty:3},
+      {no:11, cat:"Team Spotlight", qty:3},{no:12, cat:"Grand Opening", qty:3},
+      {no:13, cat:"Referral Program", qty:3},
+    ],
+    noModelCategories: ["Free Consultation Offer"],
+  },
+
+  nonprofit: {
+    label: "Non-profit / Community",
+    hasPerson: true,
+    subs: [
+      {name:"General", subject:"a group of generic diverse people volunteering or engaged in a community activity, generic facial features not resembling any real person", setting:"community event or outdoor volunteer setting"},
+    ],
+    categories: [
+      {no:1, cat:"Campaign Highlight", qty:7},{no:2, cat:"Volunteer Spotlight", qty:5},
+      {no:3, cat:"Donation Drive Announcement", qty:6},{no:4, cat:"Impact Story", qty:5},
+      {no:5, cat:"Event Announcement", qty:5},{no:6, cat:"Thank You / Donor Shoutout", qty:4},
+      {no:7, cat:"Fundraising Goal Update", qty:4},{no:8, cat:"Countdown To Event", qty:4},
+      {no:9, cat:"Partnership Announcement", qty:3},{no:10, cat:"Milestone Announcement", qty:3},
+      {no:11, cat:"Team Spotlight", qty:3},{no:12, cat:"Call To Action Post", qty:3},
+    ],
+    noModelCategories: [],
+  },
+};
+
+// ══════════════════════════════════════════════════════════════
+// LISTING META — data buat generate Title / Description / Tags
+// per Master Kategori
+// ══════════════════════════════════════════════════════════════
+const LISTING_META = {
+  sport: { shortLabel:"Sports", emoji:"⚽🔥", audienceNoun:"team", audiencePhrase:"clubs, coaches, athletes, and sports brands",
+    perfectFor:["Sports Teams & Clubs","Coaches & Sports Managers","Athletes & Influencers","Sports Marketing Agencies","School & College Teams"] },
+  kuliner: { shortLabel:"Restaurant", emoji:"🍽️🔥", audienceNoun:"business", audiencePhrase:"restaurants, cafes, bakeries, and food businesses",
+    perfectFor:["Restaurants & Cafes","Bakeries & Food Trucks","Chefs & Food Bloggers","Catering Businesses","Small F&B Brands"] },
+  it: { shortLabel:"Tech", emoji:"💻🚀", audienceNoun:"product", audiencePhrase:"startups, SaaS founders, app developers, and tech brands",
+    perfectFor:["Startups & SaaS Founders","App & Web Developers","Tech Marketing Teams","Indie Game Studios","Product Marketers"] },
+  fashion: { shortLabel:"Fashion", emoji:"👗✨", audienceNoun:"brand", audiencePhrase:"boutiques, clothing brands, and fashion influencers",
+    perfectFor:["Fashion Boutiques","Clothing Brands","Fashion Influencers","Online Shop Owners","Stylists & Designers"] },
+  beauty: { shortLabel:"Beauty", emoji:"💄✨", audienceNoun:"studio", audiencePhrase:"salons, spas, and beauty brands",
+    perfectFor:["Hair & Nail Salons","Skincare Brands","Makeup Artists","Beauty Studios","Spa & Wellness Businesses"] },
+  fitness: { shortLabel:"Fitness", emoji:"💪🔥", audienceNoun:"gym", audiencePhrase:"gyms, trainers, and fitness coaches",
+    perfectFor:["Gyms & Fitness Studios","Personal Trainers","Yoga Instructors","Nutrition Coaches","Wellness Brands"] },
+  realestate: { shortLabel:"Real Estate", emoji:"🏡✨", audienceNoun:"agency", audiencePhrase:"real estate agents, brokers, and property businesses",
+    perfectFor:["Real Estate Agents","Property Brokers","Real Estate Agencies","Home Stagers","Property Investors"] },
+  wedding: { shortLabel:"Event", emoji:"💍✨", audienceNoun:"business", audiencePhrase:"wedding and event planning businesses",
+    perfectFor:["Wedding Planners","Event Coordinators","Venue Owners","Event Vendors","Party Planners"] },
+  photography: { shortLabel:"Photography", emoji:"📸✨", audienceNoun:"studio", audiencePhrase:"photographers and videographers",
+    perfectFor:["Wedding Photographers","Portrait Photographers","Videographers","Photography Studios","Freelance Creatives"] },
+  education: { shortLabel:"Course", emoji:"🎓✨", audienceNoun:"brand", audiencePhrase:"course creators, tutors, and education businesses",
+    perfectFor:["Online Course Creators","Tutors & Coaches","Bootcamps & Schools","Educators","Coaching Businesses"] },
+  travel: { shortLabel:"Travel", emoji:"✈️🌴", audienceNoun:"business", audiencePhrase:"travel agents, hotels, and tour businesses",
+    perfectFor:["Travel Agents","Hotels & Resorts","Tour Guides","Travel Bloggers","Vacation Rental Owners"] },
+  automotive: { shortLabel:"Automotive", emoji:"🚗🔥", audienceNoun:"shop", audiencePhrase:"car dealers, detailers, and auto shops",
+    perfectFor:["Car Dealerships","Auto Detailing Shops","Repair Workshops","Car Rental Businesses","Automotive Brands"] },
+  health: { shortLabel:"Medical", emoji:"🩺✨", audienceNoun:"clinic", audiencePhrase:"clinics, dentists, and healthcare providers",
+    perfectFor:["Clinics & Hospitals","Dentists","Therapists & Counselors","Healthcare Providers","Wellness Practices"] },
+  finance: { shortLabel:"Business", emoji:"💼📈", audienceNoun:"firm", audiencePhrase:"consultants, coaches, and agencies",
+    perfectFor:["Business Consultants","Coaches & Mentors","Marketing Agencies","Financial Advisors","Small Business Owners"] },
+  pet: { shortLabel:"Pet", emoji:"🐾✨", audienceNoun:"business", audiencePhrase:"pet shops, groomers, and vet clinics",
+    perfectFor:["Pet Shops","Pet Groomers","Veterinary Clinics","Pet Sitters","Animal Rescues"] },
+  music: { shortLabel:"Music", emoji:"🎤🔥", audienceNoun:"brand", audiencePhrase:"musicians, DJs, and event organizers",
+    perfectFor:["Musicians & Bands","DJs & Producers","Event Organizers","Music Venues","Entertainment Brands"] },
+  homeinterior: { shortLabel:"Interior", emoji:"🛋️✨", audienceNoun:"studio", audiencePhrase:"interior designers, furniture brands, and renovation businesses",
+    perfectFor:["Interior Designers","Furniture Brands","Renovation Contractors","Home Stagers","Real Estate Stylists"] },
+  nonprofit: { shortLabel:"Nonprofit", emoji:"🤝✨", audienceNoun:"organization", audiencePhrase:"nonprofits, charities, and community organizations",
+    perfectFor:["Nonprofits & Charities","Community Organizations","Fundraising Teams","Volunteer Groups","Social Causes"] },
+};
+
+
+// Light = latar putih bersih dengan warna sebagai aksen
+const COLORS = [
+  {name:"Navy Blue", dark:"deep navy blue dominant background filling most of the frame, subtle darker navy gradient, white accent linework", light:"clean white dominant background with navy blue accent blocks and typography"},
+  {name:"Sky Blue", dark:"deep sky blue dominant background filling most of the frame, subtle darker blue gradient, white accent linework", light:"clean white dominant background with sky blue accent blocks and typography"},
+  {name:"Crimson Red", dark:"deep crimson red dominant background filling most of the frame, subtle darker red gradient, white accent linework", light:"clean white dominant background with crimson red accent blocks and typography"},
+  {name:"Maroon", dark:"deep maroon dominant background filling most of the frame, subtle darker maroon gradient, cream accent linework", light:"clean white dominant background with maroon accent blocks and typography"},
+  {name:"Orange", dark:"deep burnt orange dominant background filling most of the frame, subtle darker orange gradient, white accent linework", light:"clean white dominant background with vibrant orange accent blocks and typography"},
+  {name:"Gold", dark:"deep amber gold dominant background filling most of the frame, subtle darker gold gradient, navy accent linework", light:"clean white dominant background with golden yellow accent blocks and typography"},
+  {name:"Forest Green", dark:"deep forest green dominant background filling most of the frame, subtle darker green gradient, white accent linework", light:"clean white dominant background with forest green accent blocks and typography"},
+  {name:"Emerald Green", dark:"deep emerald green dominant background filling most of the frame, subtle darker green gradient, white accent linework", light:"clean white dominant background with emerald green accent blocks and typography"},
+  {name:"Purple", dark:"deep royal purple dominant background filling most of the frame, subtle darker purple gradient, white accent linework", light:"clean white dominant background with royal purple accent blocks and typography"},
+  {name:"Teal", dark:"deep teal dominant background filling most of the frame, subtle darker teal gradient, white accent linework", light:"clean white dominant background with teal accent blocks and typography"},
+  {name:"Black", dark:"true black dominant background filling most of the frame, subtle charcoal gradient, white accent linework", light:"clean white dominant background with black accent blocks and typography"},
+  {name:"Silver Gray", dark:"deep graphite gray dominant background filling most of the frame, subtle darker gray gradient, white accent linework", light:"clean white dominant background with silver gray accent blocks and typography"},
+  {name:"Pink", dark:"deep magenta pink dominant background filling most of the frame, subtle darker pink gradient, white accent linework", light:"clean white dominant background with vibrant pink accent blocks and typography"},
+  {name:"Yellow", dark:"deep mustard yellow dominant background filling most of the frame, subtle darker yellow gradient, navy accent linework", light:"clean white dominant background with bright yellow accent blocks and typography"},
+];
+
+// Base design SELALU digenerate di Square — nanti di-resize di Canva (Magic Expand)
+// jadi Portrait & Story, jadi 1 generate = 3 template final.
+const BASE_ASPECT_TEXT = "exactly 1080 x 1080 pixels (this will later be resized/extended in Canva into 1080x1350 and 1080x1920 versions, so keep it extend-friendly)";
+
+// Rescale qty tiap kategori proporsional ke target total base design (largest remainder method)
+function rescaleQuantities(categories, targetTotal){
+  // Kalau target lebih kecil dari jumlah kategori, ga semua kategori kebagian —
+  // pilih kategori dengan qty original terbesar dulu (paling "signifikan").
+  if(targetTotal < categories.length){
+    const sorted = categories.slice().sort((a,b)=>b.qty-a.qty).slice(0, targetTotal);
+    const chosenNos = new Set(sorted.map(c=>c.no));
+    return categories
+      .filter(c=>chosenNos.has(c.no))
+      .map(c=>({ ...c, qty: 1 }));
+  }
+
+  const originalTotal = categories.reduce((a,c)=>a+c.qty,0);
+  const raw = categories.map(c => (c.qty / originalTotal) * targetTotal);
+  const floors = raw.map(r=>Math.max(1, Math.floor(r))); // minimal 1 per kategori
+  let allocated = floors.reduce((a,b)=>a+b,0);
+  let remainder = targetTotal - allocated;
+  const fracOrder = raw.map((r,i)=>({i, frac:r-Math.floor(r)})).sort((a,b)=>b.frac-a.frac);
+  const result = floors.slice();
+  let k = 0;
+  while(remainder > 0 && k < fracOrder.length){
+    result[fracOrder[k].i] += 1;
+    remainder--; k++;
+  }
+  while(remainder > 0){ // kalau target lebih gede dari jumlah kategori kali sisa pembulatan, tambahin bergilir
+    result[k % result.length] += 1;
+    remainder--; k++;
+  }
+  return categories.map((c,i)=>({ ...c, qty: result[i] }));
+}
+
+// Kata kunci arah kreatif yang gantian tiap generate — bukan posisi yang dikunci.
+const STYLE_KEYWORDS = [
+  "bold editorial poster style",
+  "dynamic motion-blur photography style",
+  "clean minimalist modern campaign style",
+  "high-energy collage-style layered composition",
+  "cinematic dramatic lighting, film-still style",
+  "gritty authentic candid photography style",
+  "polished commercial advertising style",
+  "bold typographic-forward design, text as a major visual element",
+  "documentary-style candid photography",
+  "retro-inspired poster style with a modern twist",
+  "high-contrast graphic-illustration style",
+  "sleek broadcast-graphics style, like a TV network overlay",
+];
+
+const EXTEND_FRIENDLY_NOTE = "Design the composition so it can be cleanly extended downward later in Canva (Magic Expand): keep the main subject, headline, and key text in the UPPER two-thirds of the frame, and keep the lower portion of the background simple, textured, or repeating (not containing critical text/details) so it extends naturally without awkward cropping when resized taller.";
+
+function buildPrompt(master, sub, color, mode, gender, team, categoryName, styleHint){
+  const paletteText = mode==="Dark" ? color.dark : color.light;
+  const noModel = master.noModelCategories.includes(categoryName);
+  let subjectText = sub.subject.replace(/\{gender\}/g, gender);
+  let p;
+  if(noModel){
+    p = `${master.label} - ${sub.name} themed social media graphic background, ${paletteText}, dynamic diagonal lines and geometric shapes, clean modern design aesthetic, no people or products depicted, subtle thematic iconography related to ${master.label}`;
+  } else {
+    p = `${master.label} - ${sub.name} themed social media graphic, ${paletteText}, dynamic diagonal lines and geometric shapes, professional dramatic lighting, high contrast modern aesthetic, ${subjectText}, no visible real-world brand logos, trademarks, or copyrighted marks of any kind, ${sub.setting} in the background`;
+  }
+  if(team && team.trim()!==""){
+    p += `, "${team.trim().toUpperCase()}" brand name subtly visible`;
+  }
+  if(noModel){
+    p += `. Design this as a "${categoryName}" social media template for ${master.label} (${sub.name}). Creative direction for this generation: ${styleHint}. Keep it simple and clean with NO people or products depicted anywhere in the image — focus on a clear structured area for text/information. Include bold poster-style typography (a short title plus supporting content area). Wording, layout, composition, and text placement are entirely up to your own creative discretion as long as it fits the "${categoryName}" theme and stays readable — make this generation visually distinct from other generations.`;
+  } else {
+    p += `. Design this as a "${categoryName}" social media template for ${master.label} (${sub.name}). Creative direction for this generation: ${styleHint}. Pose, camera angle, composition, subject placement, and text placement are entirely up to your own creative discretion. Include bold poster-style typography (one main headline plus a short supporting tagline), wording and styling also up to you, as long as it fits the "${categoryName}" theme and stays readable — make this generation visually distinct from other generations.`;
+  }
+  p += ` ${EXTEND_FRIENDLY_NOTE}`;
+  p += ` Final image dimensions must be ${BASE_ASPECT_TEXT}.`;
+  return p;
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+// 1 instance = 1 base design Square (bakal jadi 3 template final setelah di-resize di Canva)
+function buildInstances(master, targetTotal){
+  const scaledCategories = rescaleQuantities(master.categories, targetTotal);
+  const instances = [];
+  scaledCategories.forEach(item=>{
+    for(let i=0;i<item.qty;i++){
+      instances.push({
+        catNo: item.no,
+        catName: item.cat,
+        idxInCat: i+1,
+        totalInCat: item.qty,
+        key: `${item.no}_${i}`,
+      });
+    }
+  });
+  return instances;
+}
+
+function assignDarkLight(instances){
+  const total = instances.length;
+  const darkCount = Math.round(total/2);
+  const lightCount = total - darkCount;
+  const bag = shuffle([
+    ...Array(darkCount).fill("Dark"),
+    ...Array(lightCount).fill("Light"),
+  ]);
+  instances.forEach((inst,i)=>{ inst.mode = bag[i]; });
+}
+
+function assignStyles(instances){
+  instances.forEach((inst,i)=>{ inst.styleHint = STYLE_KEYWORDS[i % STYLE_KEYWORDS.length]; });
+}
+
+// ══════════════════════════════════════════════════════════════
+// LISTING GENERATOR — Title, Description, Tags (13, max 20 char/tag)
+// ══════════════════════════════════════════════════════════════
+function buildListingTitle(master, sub, meta, totalQty){
+  return `${sub.name} ${meta.shortLabel} Templates | ${meta.shortLabel} Instagram Posts | ${master.categories[0].cat} ${meta.shortLabel} Marketing Kit | Editable Best Selling Canva Templates`;
+}
+
+function buildListingDescription(master, sub, meta, totalQty, sizeCounts){
+  const catLines = master.categories.slice(0, 12).map(c=>c.cat).join('\n');
+  const perfectForLines = meta.perfectFor.join('\n');
+  const keywordLines = buildTagCandidates(master, sub, meta).slice(0,5).join('\n');
+
+  return `Level up your ${meta.audienceNoun}'s social media with this high-impact ${sub.name} ${meta.shortLabel} Canva Template Bundle ${meta.emoji}
+
+Designed for ${meta.audiencePhrase}, this all-in-one graphics kit helps you create professional, eye-catching posts in minutes—no design skills needed.
+
+🚀 WHAT YOU'LL GET
+
+✔ ${totalQty} Fully Editable Canva Templates
+✔ ${sizeCounts.Square} Square Posts (1080x1080)
+✔ ${sizeCounts.Portrait} Portrait Posts (1080x1350)
+✔ ${sizeCounts.Story} Story Templates (1080x1920)
+✔ FREE Beginner Guide Included
+
+🎯 TEMPLATE TYPES INCLUDED
+${catLines}
+
+✨ WHY YOU'LL LOVE IT
+✔ Fully customizable in Canva (drag & drop easy)
+✔ No Canva Pro required
+✔ Modern, bold, high-converting ${meta.shortLabel.toLowerCase()} design
+✔ Perfect for ${sub.name.toLowerCase()} ${meta.audienceNoun}s
+✔ Save hours of design time
+
+⚙️ EASY TO USE
+Open your Canva link
+Customize text, colors & photos
+Download & post instantly
+
+💡 PERFECT FOR
+${perfectForLines}
+
+${keywordLines}
+
+📌 IMPORTANT NOTES
+This is a digital product (no physical item will be shipped)
+Instant download via Canva link
+Basic Canva knowledge recommended`;
+}
+
+// Kumpulan kandidat keyword/tag, dipakai buat Tags DAN buat baris keyword di deskripsi
+function buildTagCandidates(master, sub, meta){
+  const subL = sub.name.toLowerCase();
+  const labelL = meta.shortLabel.toLowerCase();
+  const specific = [
+    `${subL} social media`,
+    `${subL} templates`,
+    `${subL} canva kit`,
+    `${subL} instagram post`,
+    `${labelL} templates`,
+    `${labelL} canva kit`,
+    `${labelL} social media`,
+    `editable ${labelL} kit`,
+    `${labelL} marketing kit`,
+    `${labelL} content pack`,
+  ];
+  const categoryBased = master.categories.slice(0,8).map(c=>c.cat.toLowerCase());
+  const generic = [
+    "canva template bundle","social media kit","digital download",
+    "editable template","instagram templates","content bundle",
+    "canva bundle","small business kit","marketing template",
+    "template pack","social media pack","canva design kit",
+    "business templates","instagram post kit","content creator kit",
+  ];
+
+  const all = [...specific, ...categoryBased, ...generic];
+  const seen = new Set();
+  const valid = [];
+  all.forEach(t=>{
+    const trimmed = t.trim();
+    const key = trimmed.toLowerCase();
+    if(trimmed.length<=20 && trimmed.length>0 && !seen.has(key)){
+      seen.add(key);
+      valid.push(trimmed);
+    }
+  });
+  return valid;
+}
+
+function buildListingTags(master, sub, meta){
+  const candidates = buildTagCandidates(master, sub, meta);
+  return candidates.slice(0, 13);
+}
+
+const masterSel = document.getElementById('masterSel');
+const subSel = document.getElementById('subSel');
+const colorSel = document.getElementById('colorSel');
+const genderSel = document.getElementById('genderSel');
+const teamInput = document.getElementById('teamInput');
+const tableWrap = document.getElementById('tableWrap');
+const statsRow = document.getElementById('statsRow');
+const footerNote = document.getElementById('footerNote');
+const fsTotal = document.getElementById('fsTotal');
+const fsBarFill = document.getElementById('fsBarFill');
+const fsSizes = document.getElementById('fsSizes');
+const fsDarkLight = document.getElementById('fsDarkLight');
+const fsDetail = document.getElementById('fsDetail');
+const fsToggle = document.getElementById('fsToggle');
+const fsReset = document.getElementById('fsReset');
+const fsSearch = document.getElementById('fsSearch');
+const reshuffleBtn = document.getElementById('reshuffleBtn');
+const baseCountInput = document.getElementById('baseCountInput');
+const generateListingBtn = document.getElementById('generateListingBtn');
+const listingPanel = document.getElementById('listingPanel');
+const listingTitleEl = document.getElementById('listingTitle');
+const listingDescEl = document.getElementById('listingDesc');
+const listingTagsEl = document.getElementById('listingTags');
+const titleCharCount = document.getElementById('titleCharCount');
+const tagCountLabel = document.getElementById('tagCountLabel');
+const tagChipRow = document.getElementById('tagChipRow');
+const mainSearch = document.getElementById('mainSearch');
+const mainSearchCount = document.getElementById('mainSearchCount');
+
+Object.keys(MASTERS).forEach(key=>{
+  const o = document.createElement('option');
+  o.value = key; o.textContent = MASTERS[key].label;
+  masterSel.appendChild(o);
+});
+COLORS.forEach(c=>{
+  const o=document.createElement('option');
+  o.value=c.name; o.textContent=c.name;
+  colorSel.appendChild(o);
+});
+
+function populateSubSel(masterKey){
+  subSel.innerHTML = "";
+  const master = MASTERS[masterKey];
+  master.subs.forEach(s=>{
+    const o = document.createElement('option');
+    o.value = s.name; o.textContent = s.name;
+    subSel.appendChild(o);
+  });
+}
+
+let copiedSet = new Set();
+let fsDetailOpen = false;
+let currentInstances = [];
+let currentMasterKey = null;
+
+// ---------- localStorage ----------
+const LS_SETTINGS_KEY = "levramstudio_settings_v2";
+const LS_COPIED_PREFIX = "levramstudio_copied_v2_";
+
+function lsGet(key){ try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e){ return null; } }
+function lsSet(key, value){ try{ localStorage.setItem(key, JSON.stringify(value)); } catch(e){} }
+function copiedStorageKey(){ return LS_COPIED_PREFIX + masterSel.value + "_" + subSel.value + "_" + colorSel.value + "_" + baseCountInput.value; }
+function loadCopiedFromStorage(){ const arr = lsGet(copiedStorageKey()); return arr ? new Set(arr) : new Set(); }
+function saveCopiedToStorage(){ lsSet(copiedStorageKey(), [...copiedSet]); }
+function saveSettingsToStorage(){
+  lsSet(LS_SETTINGS_KEY, { master: masterSel.value, sub: subSel.value, color: colorSel.value, gender: genderSel.value, team: teamInput.value, baseCount: baseCountInput.value });
+}
+function loadSettingsFromStorage(){
+  const s = lsGet(LS_SETTINGS_KEY);
+  if(!s) return;
+  if(s.master && MASTERS[s.master]) masterSel.value = s.master;
+  populateSubSel(masterSel.value);
+  if(s.sub && [...subSel.options].some(o=>o.value===s.sub)) subSel.value = s.sub;
+  if(s.color && COLORS.some(x=>x.name===s.color)) colorSel.value = s.color;
+  if(s.gender) genderSel.value = s.gender;
+  if(s.team) teamInput.value = s.team;
+  if(s.baseCount) baseCountInput.value = s.baseCount;
+}
+
+masterSel.value = "sport";
+populateSubSel("sport");
+subSel.value = "Track and Field";
+colorSel.value = "Navy Blue";
+loadSettingsFromStorage();
+// -----------------------------------
+
+function generatePromptsForInstances(){
+  const master = MASTERS[masterSel.value];
+  const sub = master.subs.find(s=>s.name===subSel.value) || master.subs[0];
+  const color = COLORS.find(c=>c.name===colorSel.value);
+  const gender = genderSel.value;
+  const team = teamInput.value;
+  currentInstances.forEach(inst=>{
+    inst.prompt = buildPrompt(master, sub, color, inst.mode, gender, team, inst.catName, inst.styleHint);
+  });
+}
+
+function renderCard(inst){
+  const card = document.createElement('div');
+  card.className = "row-card";
+  card.setAttribute('data-search', `${inst.catName} ${inst.mode}`.toLowerCase());
+  card.innerHTML = `
+    <div class="row-no">${inst.idxInCat}/${inst.totalInCat}</div>
+    <div class="row-main">
+      <div class="row-head">
+        <span class="badge size">Square base</span>
+        <span class="badge ${inst.mode==='Dark'?'mode-dark':'mode-light'}">${inst.mode}</span>
+      </div>
+      <div class="prompt-text">${inst.prompt}</div>
+    </div>
+    <div class="row-copy">
+      <button class="copy-btn" data-key="${inst.key}">Copy</button>
+    </div>
+  `;
+  return card;
+}
+
+function renderGroupedByCategory(){
+  tableWrap.innerHTML = "";
+  const master = MASTERS[masterSel.value];
+  master.categories.forEach(item=>{
+    const groupInstances = currentInstances.filter(inst=>inst.catNo===item.no);
+    if(!groupInstances.length) return;
+    const block = document.createElement('div');
+    block.className = "group-block";
+    block.innerHTML = `
+      <div class="group-block-header">
+        <span class="row-no">${String(item.no).padStart(2,'0')}</span>
+        <span class="group-block-title">${item.cat}</span>
+        <span class="group-block-count">${groupInstances.length} base &rarr; ${groupInstances.length*3} final</span>
+      </div>
+    `;
+    groupInstances.forEach(inst=>{ block.appendChild(renderCard(inst)); });
+    tableWrap.appendChild(block);
+  });
+}
+
+function filterMainList(){
+  const q = mainSearch.value.trim().toLowerCase();
+  let visibleCount = 0;
+  document.querySelectorAll('.group-block').forEach(block=>{
+    let blockHasVisible = false;
+    block.querySelectorAll('.row-card').forEach(card=>{
+      const match = !q || card.getAttribute('data-search').includes(q);
+      card.classList.toggle('hidden', !match);
+      if(match){ blockHasVisible = true; visibleCount++; }
+    });
+    block.classList.toggle('hidden', !blockHasVisible);
+  });
+  mainSearchCount.textContent = q ? `${visibleCount} prompt cocok` : "";
+}
+
+function renderTable(){
+  renderGroupedByCategory();
+  attachCopyHandlers();
+  filterMainList();
+}
+
+function render(fullRebuild){
+  const master = MASTERS[masterSel.value];
+  const color = COLORS.find(c=>c.name===colorSel.value);
+
+  if(fullRebuild){
+    const targetTotal = Math.max(5, parseInt(baseCountInput.value,10) || 30);
+    currentInstances = buildInstances(master, targetTotal);
+    assignDarkLight(currentInstances);
+    assignStyles(currentInstances);
+    copiedSet = loadCopiedFromStorage();
+    saveSettingsToStorage();
+    listingPanel.style.display = 'none';
+  }
+  generatePromptsForInstances();
+  renderTable();
+
+  const totalQty = currentInstances.length;
+  const finalTotal = totalQty * 3;
+  const darkTotal = currentInstances.filter(i=>i.mode==="Dark").length;
+  const lightTotal = totalQty - darkTotal;
+
+  document.getElementById('copyAllBtn').textContent = `Copy semua ${totalQty} prompt`;
+
+  statsRow.innerHTML = `
+    <div class="stat-chip">Base design (Square): <b>${totalQty}</b></div>
+    <div class="stat-chip">Final setelah resize: <b>${finalTotal}</b> (x3)</div>
+    <div class="stat-chip">Dark: <b>${darkTotal}</b> / Light: <b>${lightTotal}</b></div>
+    <div class="stat-chip">Master: <b>${master.label}</b></div>
+    <div class="stat-chip">Sub: <b>${subSel.value}</b></div>
+    <div class="stat-chip">Warna: <b>${color.name}</b></div>
+  `;
+
+  footerNote.innerHTML = `Master kategori tersedia: ${Object.keys(MASTERS).length}. Warna aksen tersedia: ${COLORS.length} pilihan. Tiap generate cuma bikin base design Square 1080x1080 — di Canva, resize/extend (Magic Expand) tiap base jadi Portrait 1080x1350 &amp; Story 1080x1920, jadi ${totalQty} generate menghasilkan ${finalTotal} template final. Dark/Light diacak dari kantong berisi ${darkTotal} Dark + ${lightTotal} Light, jadi urutannya random tapi totalnya tetap seimbang. Pose, posisi subjek, dan layout teks sepenuhnya bebas ditentuin ChatGPT — cuma kata kunci arah kreatif yang gantian tiap generate (${STYLE_KEYWORDS.length} gaya) biar hasilnya tetap variatif. Ganti Master/Sub/Warna/jumlah base kapan saja, seluruh prompt otomatis update.`;
+
+  updateFlyingStats();
+}
+
+function attachCopyHandlers(){
+  document.querySelectorAll('.copy-btn').forEach(btn=>{
+    const key = btn.getAttribute('data-key');
+    if(copiedSet.has(key)){
+      btn.textContent = "✓ Copied";
+      btn.classList.add('copied-done');
+    }
+    btn.addEventListener('click', ()=>{
+      const inst = currentInstances.find(i=>i.key===key);
+      if(!inst) return;
+      navigator.clipboard.writeText(inst.prompt).then(()=>{
+        copiedSet.add(key);
+        btn.textContent = "✓ Copied";
+        btn.classList.add('copied-done');
+        saveCopiedToStorage();
+        updateFlyingStats();
+      });
+    });
+  });
+}
+
+function updateFlyingStats(){
+  const master = MASTERS[masterSel.value];
+  const totalAll = currentInstances.length;
+  const copiedCount = copiedSet.size;
+  fsTotal.innerHTML = `<b>${copiedCount}</b> / ${totalAll} copied`;
+  fsBarFill.style.width = totalAll>0 ? `${(copiedCount/totalAll*100).toFixed(1)}%` : "0%";
+
+  const dlTotals = {Dark:0, Light:0}, dlCopied = {Dark:0, Light:0};
+  currentInstances.forEach(inst=>{
+    dlTotals[inst.mode]++;
+    if(copiedSet.has(inst.key)) dlCopied[inst.mode]++;
+  });
+
+  fsSizes.innerHTML = `<span class="fs-chip">Final after resize: ${totalAll*3}</span>`;
+
+  fsDarkLight.innerHTML = `
+    <span class="fs-chip dark-chip">Dark ${dlCopied.Dark}/${dlTotals.Dark}</span>
+    <span class="fs-chip light-chip">Light ${dlCopied.Light}/${dlTotals.Light}</span>
+  `;
+
+  const catCopied = {}, catTotals = {};
+  master.categories.forEach(c=>{ catTotals[c.no]=0; catCopied[c.no]=0; });
+  currentInstances.forEach(inst=>{
+    catTotals[inst.catNo]++;
+    if(copiedSet.has(inst.key)) catCopied[inst.catNo]++;
+  });
+  fsDetail.innerHTML = master.categories.filter(item=>catTotals[item.no]>0).map(item=>
+    `<div class="fs-detail-row" data-catname="${item.cat.toLowerCase()}"><span>${item.cat}</span><b>${catCopied[item.no]}/${catTotals[item.no]}</b></div>`
+  ).join('');
+  filterFsDetail();
+}
+
+function filterFsDetail(){
+  const q = fsSearch.value.trim().toLowerCase();
+  let anyVisible = false;
+  fsDetail.querySelectorAll('.fs-detail-row').forEach(row=>{
+    const match = !q || row.getAttribute('data-catname').includes(q);
+    row.classList.toggle('hidden', !match);
+    if(match) anyVisible = true;
+  });
+  let emptyMsg = fsDetail.querySelector('.fs-empty');
+  if(!anyVisible){
+    if(!emptyMsg){
+      emptyMsg = document.createElement('div');
+      emptyMsg.className = "fs-empty";
+      emptyMsg.textContent = "Kategori tidak ditemukan";
+      fsDetail.appendChild(emptyMsg);
+    }
+  } else if(emptyMsg){
+    emptyMsg.remove();
+  }
+}
+
+fsSearch.addEventListener('input', filterFsDetail);
+mainSearch.addEventListener('input', filterMainList);
+
+fsToggle.addEventListener('click', ()=>{
+  fsDetailOpen = !fsDetailOpen;
+  fsDetail.style.display = fsDetailOpen ? "block" : "none";
+  fsSearch.style.display = fsDetailOpen ? "block" : "none";
+  fsToggle.textContent = fsDetailOpen ? "Detail ▴" : "Detail ▾";
+});
+
+fsReset.addEventListener('click', ()=>{
+  copiedSet = new Set();
+  saveCopiedToStorage();
+  document.querySelectorAll('.copy-btn').forEach(btn=>{
+    btn.textContent = "Copy";
+    btn.classList.remove('copied-done');
+  });
+  updateFlyingStats();
+});
+
+reshuffleBtn.addEventListener('click', ()=>{
+  assignDarkLight(currentInstances);
+  copiedSet = new Set();
+  saveCopiedToStorage();
+  render(false);
+});
+
+function renderListing(){
+  const master = MASTERS[masterSel.value];
+  const sub = master.subs.find(s=>s.name===subSel.value) || master.subs[0];
+  const meta = LISTING_META[masterSel.value];
+  const baseQty = currentInstances.length;
+  const finalQty = baseQty * 3;
+  // tiap base design jadi 1 Square + 1 Portrait + 1 Story setelah resize
+  const sizeCounts = { Square: baseQty, Portrait: baseQty, Story: baseQty };
+
+  const title = buildListingTitle(master, sub, meta, finalQty);
+  const desc = buildListingDescription(master, sub, meta, finalQty, sizeCounts);
+  const tags = buildListingTags(master, sub, meta);
+
+  listingTitleEl.value = title;
+  listingDescEl.value = desc;
+  listingTagsEl.value = tags.join(', ');
+  titleCharCount.textContent = `(${title.length} char)`;
+  tagCountLabel.textContent = `(${tags.length}/13, max 20 char masing-masing)`;
+
+  tagChipRow.innerHTML = tags.map(t=>{
+    const warn = t.length>20 ? ' warn' : '';
+    return `<span class="tag-chip${warn}">${t} · ${t.length}</span>`;
+  }).join('');
+
+  listingPanel.style.display = 'block';
+  listingPanel.scrollIntoView({behavior:'smooth', block:'start'});
+}
+generateListingBtn.addEventListener('click', renderListing);
+
+function copyTextareaContent(el, btn){
+  navigator.clipboard.writeText(el.value).then(()=>{
+    const orig = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(()=>{ btn.textContent = orig; }, 1400);
+  });
+}
+document.getElementById('copyTitleBtn').addEventListener('click', function(){ copyTextareaContent(listingTitleEl, this); });
+document.getElementById('copyDescBtn').addEventListener('click', function(){ copyTextareaContent(listingDescEl, this); });
+document.getElementById('copyTagsBtn').addEventListener('click', function(){ copyTextareaContent(listingTagsEl, this); });
+
+document.getElementById('copyAllBtn').addEventListener('click', ()=>{
+  const master = MASTERS[masterSel.value];
+  let out = "";
+  const grouped = master.categories
+    .map(item=>({label:item.cat, items:currentInstances.filter(i=>i.catNo===item.no)}))
+    .filter(g=>g.items.length>0);
+  grouped.forEach(g=>{
+    out += `=== ${g.label} (${g.items.length} base -> ${g.items.length*3} final) ===\n`;
+    g.items.forEach(inst=>{
+      out += `[${inst.mode}] ${inst.prompt}\n\n`;
+    });
+  });
+  navigator.clipboard.writeText(out.trim()).then(()=>{
+    const btn = document.getElementById('copyAllBtn');
+    const orig = btn.textContent;
+    btn.textContent = "Semua ke-copy";
+    setTimeout(()=>{ btn.textContent = orig; }, 1600);
+  });
+});
+
+document.getElementById('scrollTop').addEventListener('click', ()=>{
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+masterSel.addEventListener('change', ()=>{
+  populateSubSel(masterSel.value);
+  render(true);
+});
+[subSel, colorSel, genderSel, teamInput, baseCountInput].forEach(el=>{
+  el.addEventListener('input', ()=>render(true));
+  el.addEventListener('change', ()=>render(true));
+});
+
+render(true);
+</script>
+</body>
+</html>
