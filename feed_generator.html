@@ -244,6 +244,8 @@
     color:var(--text-secondary);
   }
   .tag-chip.warn{ border-color:#e85d75; color:#e85d75; }
+  .dl-row-guideline{ display:flex; justify-content:center; }
+  .dl-row-guideline .copy-btn{ padding:10px 20px; }
 
   .row-card{
     background:var(--surface);
@@ -518,7 +520,16 @@
     <button class="primary" id="copyAllBtn">Copy semua prompt</button>
     <button class="ghost" id="reshuffleBtn">Acak ulang Dark/Light</button>
     <button class="ghost" id="generateListingBtn">Generate Title / Desc / Tags</button>
+    <button class="ghost" id="generateGuidelineBtn">Generate Brand Guideline</button>
     <button class="ghost" id="scrollTop">Ke atas</button>
+  </div>
+
+  <div class="panel" id="guidelinePanel" style="display:none">
+    <p class="panel-title">Brand Guideline — 1 Halaman</p>
+    <canvas id="guidelineCanvas" style="width:100%;max-width:520px;display:block;margin:0 auto 14px;border-radius:8px;border:1px solid var(--border-strong);"></canvas>
+    <div class="dl-row-guideline">
+      <button class="copy-btn" id="dlGuidelinePng">Download PNG</button>
+    </div>
   </div>
 
   <div class="panel" id="listingPanel" style="display:none">
@@ -1033,7 +1044,7 @@ const COLORS = [
 
 // Base design SELALU digenerate di Square — nanti di-resize di Canva (Magic Expand)
 // jadi Portrait & Story, jadi 1 generate = 3 template final.
-const BASE_ASPECT_TEXT = "exactly 1080 x 1080 pixels (this will later be resized/extended in Canva into 1080x1350 and 1080x1920 versions, so keep it extend-friendly)";
+const BASE_ASPECT_TEXT = "exactly 1080 x 1080 pixels";
 
 // Rescale qty tiap kategori proporsional ke target total base design (largest remainder method)
 function rescaleQuantities(categories, targetTotal){
@@ -1082,7 +1093,7 @@ const STYLE_KEYWORDS = [
   "sleek broadcast-graphics style, like a TV network overlay",
 ];
 
-const EXTEND_FRIENDLY_NOTE = "Design a complete, well-balanced square composition that fills the entire frame naturally — do NOT leave large empty or unfinished areas just for future resizing. The only consideration: avoid placing critical headline text right at the very bottom edge (a small safe margin is enough), since this image will later be extended taller in Canva using AI outpainting (Magic Expand), which generates new matching background beyond the existing edges without needing any pre-reserved blank space.";
+const EXTEND_FRIENDLY_NOTE = "Design a complete, well-balanced square composition that fills the entire frame naturally — do not leave large empty or unfinished areas. Just keep any critical headline text with a small safety margin away from the very bottom edge of the frame.";
 
 function buildPrompt(master, sub, color, mode, gender, team, categoryName, styleHint){
   const paletteText = mode==="Dark" ? color.dark : color.light;
@@ -1271,6 +1282,10 @@ const tagCountLabel = document.getElementById('tagCountLabel');
 const tagChipRow = document.getElementById('tagChipRow');
 const mainSearch = document.getElementById('mainSearch');
 const mainSearchCount = document.getElementById('mainSearchCount');
+const generateGuidelineBtn = document.getElementById('generateGuidelineBtn');
+const guidelinePanel = document.getElementById('guidelinePanel');
+const guidelineCanvas = document.getElementById('guidelineCanvas');
+const dlGuidelinePng = document.getElementById('dlGuidelinePng');
 
 Object.keys(MASTERS).forEach(key=>{
   const o = document.createElement('option');
@@ -1413,6 +1428,7 @@ function render(fullRebuild){
     copiedSet = loadCopiedFromStorage();
     saveSettingsToStorage();
     listingPanel.style.display = 'none';
+    guidelinePanel.style.display = 'none';
   }
   generatePromptsForInstances();
   renderTable();
@@ -1567,6 +1583,180 @@ function renderListing(){
   listingPanel.scrollIntoView({behavior:'smooth', block:'start'});
 }
 generateListingBtn.addEventListener('click', renderListing);
+
+// ══════════════════════════════════════════════════════════════
+// BRAND GUIDELINE — 1 halaman, palet warna + panduan gaya
+// ══════════════════════════════════════════════════════════════
+const COLOR_HEX = {
+  "Navy Blue": {dark:"#14213D", light:"#1B3A6B"},
+  "Sky Blue": {dark:"#0B6E99", light:"#2D9CDB"},
+  "Crimson Red": {dark:"#8E1B2E", light:"#C8102E"},
+  "Maroon": {dark:"#4A1620", light:"#7A263A"},
+  "Orange": {dark:"#B03E0E", light:"#E8622A"},
+  "Gold": {dark:"#8A6B00", light:"#D4A017"},
+  "Forest Green": {dark:"#173E32", light:"#2E7D5B"},
+  "Emerald Green": {dark:"#0D5A3F", light:"#16A870"},
+  "Purple": {dark:"#3E2665", light:"#6A3FA0"},
+  "Teal": {dark:"#0D5A5F", light:"#17A2A8"},
+  "Black": {dark:"#0A0A0A", light:"#1A1A1A"},
+  "Silver Gray": {dark:"#3F3F3F", light:"#7A7A7A"},
+  "Pink": {dark:"#8E1050", light:"#D6266E"},
+  "Yellow": {dark:"#7A6008", light:"#D4B106"},
+};
+
+function roundRectG(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+function renderBrandGuideline(){
+  const master = MASTERS[masterSel.value];
+  const sub = master.subs.find(s=>s.name===subSel.value) || master.subs[0];
+  const colorName = colorSel.value;
+  const hex = COLOR_HEX[colorName] || {dark:"#222222", light:"#666666"};
+  const team = teamInput.value.trim();
+  const baseQty = currentInstances.length || 30;
+
+  const W = 1000, H = 1294;
+  guidelineCanvas.width = W; guidelineCanvas.height = H;
+  const ctx = guidelineCanvas.getContext('2d');
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,W,H);
+
+  // Header band
+  const headH = 170;
+  ctx.fillStyle = hex.dark;
+  ctx.fillRect(0,0,W,headH);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 20px -apple-system, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('BRAND GUIDELINE', 50, 55);
+  ctx.font = '800 42px -apple-system, sans-serif';
+  ctx.fillText(`${sub.name} — ${master.label}`, 50, 105);
+  ctx.font = '400 18px -apple-system, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.fillText(`Warna aksen: ${colorName}${team ? '  ·  Brand: '+team.toUpperCase() : ''}`, 50, 140);
+
+  let y = headH + 50;
+
+  // Section: Color Palette
+  ctx.fillStyle = '#111';
+  ctx.font = '700 22px -apple-system, sans-serif';
+  ctx.fillText('COLOR PALETTE', 50, y);
+  y += 25;
+  const swW = 420, swH = 130, gap = 20;
+  // Dark swatch
+  ctx.fillStyle = hex.dark;
+  roundRectG(ctx, 50, y, swW, swH, 10); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = '700 16px -apple-system, sans-serif';
+  ctx.fillText('DARK MODE', 68, y+35);
+  ctx.font = '400 13px -apple-system, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.fillText(hex.dark.toUpperCase(), 68, y+58);
+  ctx.fillText('Saturated color fills majority of frame', 68, y+82);
+  // Light swatch
+  const lx = 50+swW+gap;
+  ctx.fillStyle = '#f7f7f7';
+  roundRectG(ctx, lx, y, swW, swH, 10); ctx.fill();
+  ctx.strokeStyle = '#ddd'; ctx.lineWidth=1; roundRectG(ctx, lx, y, swW, swH, 10); ctx.stroke();
+  ctx.fillStyle = hex.light;
+  ctx.fillRect(lx+18, y+18, 60, 60);
+  ctx.fillStyle = '#111';
+  ctx.font = '700 16px -apple-system, sans-serif';
+  ctx.fillText('LIGHT MODE', lx+92, y+35);
+  ctx.font = '400 13px -apple-system, sans-serif';
+  ctx.fillStyle = '#555';
+  ctx.fillText(hex.light.toUpperCase()+' accent', lx+92, y+58);
+  ctx.fillText('White base, color as accent only', lx+92, y+82);
+  y += swH + 45;
+
+  // Section: Typography
+  ctx.fillStyle = '#111';
+  ctx.font = '700 22px -apple-system, sans-serif';
+  ctx.fillText('TYPOGRAPHY', 50, y);
+  y += 15;
+  ctx.font = '800 64px -apple-system, sans-serif';
+  ctx.fillText('Aa', 50, y+70);
+  ctx.font = '400 15px -apple-system, sans-serif';
+  ctx.fillStyle = '#555';
+  ctx.fillText('Bold, condensed poster-style typography (e.g. Anton, Bebas Neue, Oswald).', 140, y+35);
+  ctx.fillText('One main headline + short supporting tagline per template.', 140, y+58);
+  y += 100;
+
+  // Section: Creative Style Direction
+  ctx.fillStyle = '#111';
+  ctx.font = '700 22px -apple-system, sans-serif';
+  ctx.fillText('CREATIVE STYLE DIRECTION', 50, y);
+  y += 28;
+  ctx.font = '400 15px -apple-system, sans-serif';
+  ctx.fillStyle = '#333';
+  STYLE_KEYWORDS.slice(0,6).forEach(k=>{
+    ctx.fillText('•  '+k, 50, y);
+    y += 26;
+  });
+  y += 14;
+
+  // Section: Subject Guidelines
+  ctx.fillStyle = '#111';
+  ctx.font = '700 22px -apple-system, sans-serif';
+  ctx.fillText('SUBJECT GUIDELINES', 50, y);
+  y += 28;
+  ctx.font = '400 15px -apple-system, sans-serif';
+  ctx.fillStyle = '#333';
+  const rules = [
+    'Generic subjects only — no real people, athletes, or celebrities',
+    'No visible real-world brand logos, trademarks, or copyrighted marks',
+    `Subject reference: ${sub.subject.replace(/\{gender\}/g,'male/female').slice(0,70)}...`,
+    `Setting: ${sub.setting}`,
+  ];
+  rules.forEach(r=>{
+    ctx.fillText('•  '+r, 50, y);
+    y += 26;
+  });
+  y += 14;
+
+  // Section: Production Specs
+  ctx.fillStyle = '#111';
+  ctx.font = '700 22px -apple-system, sans-serif';
+  ctx.fillText('PRODUCTION SPECS', 50, y);
+  y += 28;
+  ctx.font = '400 15px -apple-system, sans-serif';
+  ctx.fillStyle = '#333';
+  const specs = [
+    `Base design size: Square 1080 x 1080 pixels (${baseQty} base designs)`,
+    'Resize to Portrait 1080x1350 & Story 1080x1920 via Canva Magic Expand',
+    'Dark : Light ratio — 50 : 50 (randomized per generate)',
+    `Final deliverable: ${baseQty} x 3 = ${baseQty*3} templates total`,
+  ];
+  specs.forEach(s=>{
+    ctx.fillText('•  '+s, 50, y);
+    y += 26;
+  });
+
+  // Footer
+  ctx.fillStyle = '#999';
+  ctx.font = '400 12px -apple-system, sans-serif';
+  ctx.fillText('Generated by LevramStudio Social Media Prompt Generator', 50, H-30);
+
+  guidelinePanel.style.display = 'block';
+  guidelinePanel.scrollIntoView({behavior:'smooth', block:'start'});
+}
+generateGuidelineBtn.addEventListener('click', renderBrandGuideline);
+
+dlGuidelinePng.addEventListener('click', ()=>{
+  const dataUrl = guidelineCanvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = `brand-guideline-${masterSel.value}-${Date.now()}.png`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+});
 
 function copyTextareaContent(el, btn){
   navigator.clipboard.writeText(el.value).then(()=>{
