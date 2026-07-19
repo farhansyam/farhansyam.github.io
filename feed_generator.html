@@ -1012,22 +1012,23 @@ const LISTING_META = {
 };
 
 
+// Dark = warna itu sendiri yang jadi latar dominan (SATURATED, bukan hitam) memenuhi mayoritas frame
 // Light = latar putih bersih dengan warna sebagai aksen
 const COLORS = [
-  {name:"Navy Blue", dark:"deep navy blue dominant background filling most of the frame, subtle darker navy gradient, white accent linework", light:"clean white dominant background with navy blue accent blocks and typography"},
-  {name:"Sky Blue", dark:"deep sky blue dominant background filling most of the frame, subtle darker blue gradient, white accent linework", light:"clean white dominant background with sky blue accent blocks and typography"},
-  {name:"Crimson Red", dark:"deep crimson red dominant background filling most of the frame, subtle darker red gradient, white accent linework", light:"clean white dominant background with crimson red accent blocks and typography"},
-  {name:"Maroon", dark:"deep maroon dominant background filling most of the frame, subtle darker maroon gradient, cream accent linework", light:"clean white dominant background with maroon accent blocks and typography"},
-  {name:"Orange", dark:"deep burnt orange dominant background filling most of the frame, subtle darker orange gradient, white accent linework", light:"clean white dominant background with vibrant orange accent blocks and typography"},
-  {name:"Gold", dark:"deep amber gold dominant background filling most of the frame, subtle darker gold gradient, navy accent linework", light:"clean white dominant background with golden yellow accent blocks and typography"},
-  {name:"Forest Green", dark:"deep forest green dominant background filling most of the frame, subtle darker green gradient, white accent linework", light:"clean white dominant background with forest green accent blocks and typography"},
-  {name:"Emerald Green", dark:"deep emerald green dominant background filling most of the frame, subtle darker green gradient, white accent linework", light:"clean white dominant background with emerald green accent blocks and typography"},
-  {name:"Purple", dark:"deep royal purple dominant background filling most of the frame, subtle darker purple gradient, white accent linework", light:"clean white dominant background with royal purple accent blocks and typography"},
-  {name:"Teal", dark:"deep teal dominant background filling most of the frame, subtle darker teal gradient, white accent linework", light:"clean white dominant background with teal accent blocks and typography"},
-  {name:"Black", dark:"true black dominant background filling most of the frame, subtle charcoal gradient, white accent linework", light:"clean white dominant background with black accent blocks and typography"},
-  {name:"Silver Gray", dark:"deep graphite gray dominant background filling most of the frame, subtle darker gray gradient, white accent linework", light:"clean white dominant background with silver gray accent blocks and typography"},
-  {name:"Pink", dark:"deep magenta pink dominant background filling most of the frame, subtle darker pink gradient, white accent linework", light:"clean white dominant background with vibrant pink accent blocks and typography"},
-  {name:"Yellow", dark:"deep mustard yellow dominant background filling most of the frame, subtle darker yellow gradient, navy accent linework", light:"clean white dominant background with bright yellow accent blocks and typography"},
+  {name:"Navy Blue", dark:"rich, vividly saturated royal navy blue (like a classic sports jersey blue, cobalt undertone) as the dominant background color filling most of the frame — clearly identifiable as blue, NOT black or muddy — with a subtle tonal gradient staying within the same navy blue hue, white accent linework", light:"clean white dominant background with vivid navy blue (cobalt-toned, not black) accent blocks and typography"},
+  {name:"Sky Blue", dark:"rich, vividly saturated sky blue / cerulean as the dominant background color filling most of the frame — clearly a bright true blue, NOT dark navy or black — with a subtle tonal gradient staying within the same blue hue, white accent linework", light:"clean white dominant background with vivid sky blue / cerulean accent blocks and typography"},
+  {name:"Crimson Red", dark:"rich, vividly saturated crimson red as the dominant background color filling most of the frame — a true vibrant red, NOT brown or near-black — with a subtle tonal gradient staying within the same red hue, white accent linework", light:"clean white dominant background with vivid crimson red accent blocks and typography"},
+  {name:"Maroon", dark:"rich, saturated wine-toned maroon as the dominant background color filling most of the frame — clearly a reddish-brown maroon, NOT pure black — with a subtle tonal gradient staying within the same maroon hue, cream accent linework", light:"clean white dominant background with vivid maroon accent blocks and typography"},
+  {name:"Orange", dark:"rich, vividly saturated burnt orange as the dominant background color filling most of the frame — a warm true orange, NOT brown or muddy — with a subtle tonal gradient staying within the same orange hue, white accent linework", light:"clean white dominant background with vibrant orange accent blocks and typography"},
+  {name:"Gold", dark:"rich, vividly saturated amber gold as the dominant background color filling most of the frame — a warm metallic gold tone, NOT brown or olive — with a subtle tonal gradient staying within the same gold hue, navy accent linework", light:"clean white dominant background with golden yellow accent blocks and typography"},
+  {name:"Forest Green", dark:"rich, vividly saturated forest green as the dominant background color filling most of the frame — clearly identifiable as green, NOT black or khaki — with a subtle tonal gradient staying within the same green hue, white accent linework", light:"clean white dominant background with vivid forest green accent blocks and typography"},
+  {name:"Emerald Green", dark:"rich, vividly saturated jewel-tone emerald green as the dominant background color filling most of the frame — a bright true emerald, NOT black or dull olive — with a subtle tonal gradient staying within the same green hue, white accent linework", light:"clean white dominant background with vivid emerald green accent blocks and typography"},
+  {name:"Purple", dark:"rich, vividly saturated royal purple as the dominant background color filling most of the frame — a true vibrant purple, NOT black or muddy brown — with a subtle tonal gradient staying within the same purple hue, white accent linework", light:"clean white dominant background with vivid royal purple accent blocks and typography"},
+  {name:"Teal", dark:"rich, vividly saturated teal (blue-green) as the dominant background color filling most of the frame — clearly identifiable as teal, NOT black or navy — with a subtle tonal gradient staying within the same teal hue, white accent linework", light:"clean white dominant background with vivid teal accent blocks and typography"},
+  {name:"Black", dark:"true rich black as the dominant background color filling most of the frame, subtle charcoal gradient, white accent linework", light:"clean white dominant background with black accent blocks and typography"},
+  {name:"Silver Gray", dark:"medium-dark graphite gray as the dominant background color filling most of the frame — distinctly a neutral gray tone, NOT pure black — with a subtle tonal gradient staying within the same gray hue, white accent linework", light:"clean white dominant background with silver gray accent blocks and typography"},
+  {name:"Pink", dark:"rich, vividly saturated magenta pink as the dominant background color filling most of the frame — a true vibrant pink, NOT dark maroon or black — with a subtle tonal gradient staying within the same pink hue, white accent linework", light:"clean white dominant background with vibrant pink accent blocks and typography"},
+  {name:"Yellow", dark:"rich, vividly saturated mustard-gold yellow as the dominant background color filling most of the frame — clearly identifiable as yellow, NOT brown or olive — with a subtle tonal gradient staying within the same yellow hue, navy accent linework", light:"clean white dominant background with bright yellow accent blocks and typography"},
 ];
 
 // Base design SELALU digenerate di Square — nanti di-resize di Canva (Magic Expand)
@@ -1081,7 +1082,7 @@ const STYLE_KEYWORDS = [
   "sleek broadcast-graphics style, like a TV network overlay",
 ];
 
-const EXTEND_FRIENDLY_NOTE = "Design the composition so it can be cleanly extended downward later in Canva (Magic Expand): keep the main subject, headline, and key text in the UPPER two-thirds of the frame, and keep the lower portion of the background simple, textured, or repeating (not containing critical text/details) so it extends naturally without awkward cropping when resized taller.";
+const EXTEND_FRIENDLY_NOTE = "Design a complete, well-balanced square composition that fills the entire frame naturally — do NOT leave large empty or unfinished areas just for future resizing. The only consideration: avoid placing critical headline text right at the very bottom edge (a small safe margin is enough), since this image will later be extended taller in Canva using AI outpainting (Magic Expand), which generates new matching background beyond the existing edges without needing any pre-reserved blank space.";
 
 function buildPrompt(master, sub, color, mode, gender, team, categoryName, styleHint){
   const paletteText = mode==="Dark" ? color.dark : color.light;
@@ -1089,9 +1090,9 @@ function buildPrompt(master, sub, color, mode, gender, team, categoryName, style
   let subjectText = sub.subject.replace(/\{gender\}/g, gender);
   let p;
   if(noModel){
-    p = `${master.label} - ${sub.name} themed social media graphic background, ${paletteText}, dynamic diagonal lines and geometric shapes, clean modern design aesthetic, no people or products depicted, subtle thematic iconography related to ${master.label}`;
+    p = `${master.label} - ${sub.name} themed social media graphic background, ${paletteText}, clean modern design aesthetic with minimal decorative clutter, no scribbles, scratch marks, or busy overlapping graphic elements, no people or products depicted, subtle thematic iconography related to ${master.label}`;
   } else {
-    p = `${master.label} - ${sub.name} themed social media graphic, ${paletteText}, dynamic diagonal lines and geometric shapes, professional dramatic lighting, high contrast modern aesthetic, ${subjectText}, no visible real-world brand logos, trademarks, or copyrighted marks of any kind, ${sub.setting} in the background`;
+    p = `${master.label} - ${sub.name} themed social media graphic, ${paletteText}, professional dramatic lighting, high contrast modern aesthetic, clean composition with minimal decorative clutter, no scribbles, scratch marks, or busy overlapping graphic elements, ${subjectText}, no visible real-world brand logos, trademarks, or copyrighted marks of any kind, ${sub.setting} in the background`;
   }
   if(team && team.trim()!==""){
     p += `, "${team.trim().toUpperCase()}" brand name subtly visible`;
