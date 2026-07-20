@@ -79,6 +79,56 @@
     grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
     gap:16px;
   }
+  .color-checkbox-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+    gap:8px;
+  }
+  .color-checkbox{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--surface-2);
+    border:1px solid var(--border-strong);
+    border-radius:8px;
+    padding:7px 10px;
+    font-size:12.5px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .color-checkbox:hover{ border-color:var(--accent); }
+  .color-checkbox input{ margin:0; accent-color:var(--accent); cursor:pointer; }
+  .color-checkbox.checked{ border-color:var(--accent); background:rgba(240,180,41,0.08); }
+
+  .ref-upload-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-top:10px;
+    flex-wrap:wrap;
+  }
+  .ref-upload-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    font-size:12.5px;
+    padding:8px 14px;
+  }
+  .extracted-swatch-preview{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    color:var(--text-secondary);
+  }
+  .extracted-swatch-box{
+    width:28px;
+    height:28px;
+    border-radius:6px;
+    border:1px solid var(--border-strong);
+    flex-shrink:0;
+  }
   .field label{
     display:block;
     font-size:12px;
@@ -493,9 +543,19 @@
         <label for="subSel">Sub Kategori</label>
         <select id="subSel"></select>
       </div>
-      <div class="field">
-        <label for="colorSel">Warna aksen</label>
-        <select id="colorSel"></select>
+      <div class="field" style="grid-column:1/-1">
+        <label>Warna aksen (bisa pilih lebih dari 1 — base design otomatis dibagi rata)</label>
+        <div class="color-checkbox-grid" id="colorCheckboxGrid"></div>
+        <div class="ref-upload-row">
+          <label class="ghost ref-upload-btn">
+            &#127912; Upload Gambar Referensi (ekstrak warna otomatis)
+            <input type="file" id="refImageInput" accept="image/*" style="display:none">
+          </label>
+          <div id="extractedSwatchPreview" class="extracted-swatch-preview" style="display:none">
+            <div id="extractedSwatchBox" class="extracted-swatch-box"></div>
+            <span id="extractedSwatchLabel"></span>
+          </div>
+        </div>
       </div>
       <div class="field">
         <label for="genderSel">Gender subjek</label>
@@ -518,7 +578,7 @@
 
   <div class="actions">
     <button class="primary" id="copyAllBtn">Copy semua prompt</button>
-    <button class="ghost" id="reshuffleBtn">Acak ulang Dark/Light</button>
+    <button class="ghost" id="reshuffleBtn">Acak ulang Dark/Light &amp; Warna</button>
     <button class="ghost" id="generateListingBtn">Generate Title / Desc / Tags</button>
     <button class="ghost" id="generateGuidelineBtn">Generate Brand Guideline</button>
     <button class="ghost" id="scrollTop">Ke atas</button>
@@ -1113,8 +1173,11 @@ const ZONE_KEYWORDS = [
 
 const EXTEND_FRIENDLY_NOTE = "Design a complete, well-balanced square composition that fills the entire frame naturally — do not leave large empty or unfinished areas. Just keep any critical headline text with a small safety margin away from the very bottom edge of the frame.";
 
-function buildPrompt(master, sub, color, mode, gender, team, categoryName, styleHint, zoneHint){
-  const paletteText = mode==="Dark" ? color.dark : color.light;
+function buildPrompt(master, sub, color, secondaryColor, mode, gender, team, categoryName, styleHint, zoneHint){
+  let paletteText = mode==="Dark" ? color.dark : color.light;
+  if(secondaryColor){
+    paletteText += `, combined together with secondary accent elements (cards, panels, icons, or text blocks) in ${secondaryColor.name} for a richer multi-tone palette within this single design — not just one flat solid color`;
+  }
   const noModel = master.noModelCategories.includes(categoryName);
   const usePlaceholder = !!sub.placeholderPhoto && !noModel;
   let subjectText = sub.subject.replace(/\{gender\}/g, gender);
@@ -1177,6 +1240,31 @@ function assignDarkLight(instances){
     ...Array(lightCount).fill("Light"),
   ]);
   instances.forEach((inst,i)=>{ inst.mode = bag[i]; });
+}
+
+// Bagi rata warna yang dipilih ke semua instance, urutannya diacak biar campur
+// (bukan berurutan blok per warna), pakai largest-remainder biar totalnya presisi.
+function assignColors(instances, colorNames){
+  const total = instances.length;
+  const n = colorNames.length;
+  if(n<=1){
+    instances.forEach(inst=>{ inst.colorName = colorNames[0]; inst.secondaryColorName = null; });
+    return;
+  }
+  const base = Math.floor(total/n);
+  let remainder = total - base*n;
+  const counts = colorNames.map(()=>base);
+  for(let i=0;i<remainder;i++){ counts[i % n]++; }
+  let bag = [];
+  colorNames.forEach((name,i)=>{ bag = bag.concat(Array(counts[i]).fill(name)); });
+  bag = shuffle(bag);
+  instances.forEach((inst,i)=>{
+    inst.colorName = bag[i];
+    // Sekunder: pilih 1 warna LAIN dari yang dicentang, biar tiap desain sendiri
+    // mengombinasikan >1 warna (bukan cuma gantian antar desain di batch).
+    const others = colorNames.filter(c=>c!==inst.colorName);
+    inst.secondaryColorName = others.length ? others[Math.floor(Math.random()*others.length)] : null;
+  });
 }
 
 function assignStyles(instances){
@@ -1304,7 +1392,7 @@ function buildListingTags(master, sub, meta, colorName){
 
 const masterSel = document.getElementById('masterSel');
 const subSel = document.getElementById('subSel');
-const colorSel = document.getElementById('colorSel');
+const colorCheckboxGrid = document.getElementById('colorCheckboxGrid');
 const genderSel = document.getElementById('genderSel');
 const teamInput = document.getElementById('teamInput');
 const tableWrap = document.getElementById('tableWrap');
@@ -1334,17 +1422,47 @@ const generateGuidelineBtn = document.getElementById('generateGuidelineBtn');
 const guidelinePanel = document.getElementById('guidelinePanel');
 const guidelineCanvas = document.getElementById('guidelineCanvas');
 const dlGuidelinePng = document.getElementById('dlGuidelinePng');
+const refImageInput = document.getElementById('refImageInput');
+const extractedSwatchPreview = document.getElementById('extractedSwatchPreview');
+const extractedSwatchBox = document.getElementById('extractedSwatchBox');
+const extractedSwatchLabel = document.getElementById('extractedSwatchLabel');
 
 Object.keys(MASTERS).forEach(key=>{
   const o = document.createElement('option');
   o.value = key; o.textContent = MASTERS[key].label;
   masterSel.appendChild(o);
 });
+
 COLORS.forEach(c=>{
-  const o=document.createElement('option');
-  o.value=c.name; o.textContent=c.name;
-  colorSel.appendChild(o);
+  const label = document.createElement('label');
+  label.className = 'color-checkbox';
+  label.innerHTML = `<input type="checkbox" value="${c.name}"> ${c.name}`;
+  const cb = label.querySelector('input');
+  cb.addEventListener('change', ()=>{
+    label.classList.toggle('checked', cb.checked);
+    render(true);
+  });
+  colorCheckboxGrid.appendChild(label);
 });
+
+function getSelectedColorNames(){
+  const checked = [...colorCheckboxGrid.querySelectorAll('input:checked')].map(el=>el.value);
+  if(checked.length===0){
+    // fallback: paksa minimal 1 kecentang biar ga kosong total
+    const first = colorCheckboxGrid.querySelector('input');
+    if(first){ first.checked = true; first.closest('.color-checkbox').classList.add('checked'); return [first.value]; }
+    return ["Navy Blue"];
+  }
+  return checked;
+}
+
+function setSelectedColorNames(names){
+  colorCheckboxGrid.querySelectorAll('input').forEach(cb=>{
+    const on = names.includes(cb.value);
+    cb.checked = on;
+    cb.closest('.color-checkbox').classList.toggle('checked', on);
+  });
+}
 
 function populateSubSel(masterKey){
   subSel.innerHTML = "";
@@ -1367,11 +1485,11 @@ const LS_COPIED_PREFIX = "levramstudio_copied_v2_";
 
 function lsGet(key){ try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e){ return null; } }
 function lsSet(key, value){ try{ localStorage.setItem(key, JSON.stringify(value)); } catch(e){} }
-function copiedStorageKey(){ return LS_COPIED_PREFIX + masterSel.value + "_" + subSel.value + "_" + colorSel.value + "_" + baseCountInput.value; }
+function copiedStorageKey(){ return LS_COPIED_PREFIX + masterSel.value + "_" + subSel.value + "_" + getSelectedColorNames().slice().sort().join('+') + "_" + baseCountInput.value; }
 function loadCopiedFromStorage(){ const arr = lsGet(copiedStorageKey()); return arr ? new Set(arr) : new Set(); }
 function saveCopiedToStorage(){ lsSet(copiedStorageKey(), [...copiedSet]); }
 function saveSettingsToStorage(){
-  lsSet(LS_SETTINGS_KEY, { master: masterSel.value, sub: subSel.value, color: colorSel.value, gender: genderSel.value, team: teamInput.value, baseCount: baseCountInput.value });
+  lsSet(LS_SETTINGS_KEY, { master: masterSel.value, sub: subSel.value, colors: getSelectedColorNames(), gender: genderSel.value, team: teamInput.value, baseCount: baseCountInput.value });
 }
 function loadSettingsFromStorage(){
   const s = lsGet(LS_SETTINGS_KEY);
@@ -1379,7 +1497,9 @@ function loadSettingsFromStorage(){
   if(s.master && MASTERS[s.master]) masterSel.value = s.master;
   populateSubSel(masterSel.value);
   if(s.sub && [...subSel.options].some(o=>o.value===s.sub)) subSel.value = s.sub;
-  if(s.color && COLORS.some(x=>x.name===s.color)) colorSel.value = s.color;
+  if(s.colors && Array.isArray(s.colors) && s.colors.length){
+    setSelectedColorNames(s.colors.filter(c=>COLORS.some(x=>x.name===c)));
+  }
   if(s.gender) genderSel.value = s.gender;
   if(s.team) teamInput.value = s.team;
   if(s.baseCount) baseCountInput.value = s.baseCount;
@@ -1388,31 +1508,35 @@ function loadSettingsFromStorage(){
 masterSel.value = "sport";
 populateSubSel("sport");
 subSel.value = "Track and Field";
-colorSel.value = "Navy Blue";
+setSelectedColorNames(["Navy Blue"]);
 loadSettingsFromStorage();
 // -----------------------------------
 
 function generatePromptsForInstances(){
   const master = MASTERS[masterSel.value];
   const sub = master.subs.find(s=>s.name===subSel.value) || master.subs[0];
-  const color = COLORS.find(c=>c.name===colorSel.value);
   const gender = genderSel.value;
   const team = teamInput.value;
   currentInstances.forEach(inst=>{
-    inst.prompt = buildPrompt(master, sub, color, inst.mode, gender, team, inst.catName, inst.styleHint, inst.zoneHint);
+    const color = COLORS.find(c=>c.name===inst.colorName);
+    const secondaryColor = inst.secondaryColorName ? COLORS.find(c=>c.name===inst.secondaryColorName) : null;
+    inst.prompt = buildPrompt(master, sub, color, secondaryColor, inst.mode, gender, team, inst.catName, inst.styleHint, inst.zoneHint);
   });
 }
 
 function renderCard(inst){
   const card = document.createElement('div');
   card.className = "row-card";
-  card.setAttribute('data-search', `${inst.catName} ${inst.mode}`.toLowerCase());
+  card.setAttribute('data-search', `${inst.catName} ${inst.mode} ${inst.colorName} ${inst.secondaryColorName||''}`.toLowerCase());
+  const secBadge = inst.secondaryColorName ? `<span class="badge size">+ ${inst.secondaryColorName}</span>` : '';
   card.innerHTML = `
     <div class="row-no">${inst.idxInCat}/${inst.totalInCat}</div>
     <div class="row-main">
       <div class="row-head">
         <span class="badge size">Square base</span>
         <span class="badge ${inst.mode==='Dark'?'mode-dark':'mode-light'}">${inst.mode}</span>
+        <span class="badge size">${inst.colorName}</span>
+        ${secBadge}
       </div>
       <div class="prompt-text">${inst.prompt}</div>
     </div>
@@ -1466,11 +1590,12 @@ function renderTable(){
 
 function render(fullRebuild){
   const master = MASTERS[masterSel.value];
-  const color = COLORS.find(c=>c.name===colorSel.value);
+  const selectedColors = getSelectedColorNames();
 
   if(fullRebuild){
     const targetTotal = Math.max(5, parseInt(baseCountInput.value,10) || 30);
     currentInstances = buildInstances(master, targetTotal);
+    assignColors(currentInstances, selectedColors);
     assignDarkLight(currentInstances);
     assignStyles(currentInstances);
     copiedSet = loadCopiedFromStorage();
@@ -1488,16 +1613,21 @@ function render(fullRebuild){
 
   document.getElementById('copyAllBtn').textContent = `Copy semua ${totalQty} prompt`;
 
+  const colorChips = selectedColors.map(cn=>{
+    const cnt = currentInstances.filter(i=>i.colorName===cn).length;
+    return `<div class="stat-chip">${cn}: <b>${cnt}</b></div>`;
+  }).join('');
+
   statsRow.innerHTML = `
     <div class="stat-chip">Base design (Square): <b>${totalQty}</b></div>
     <div class="stat-chip">Final setelah resize: <b>${finalTotal}</b> (x3)</div>
     <div class="stat-chip">Dark: <b>${darkTotal}</b> / Light: <b>${lightTotal}</b></div>
     <div class="stat-chip">Master: <b>${master.label}</b></div>
     <div class="stat-chip">Sub: <b>${subSel.value}</b></div>
-    <div class="stat-chip">Warna: <b>${color.name}</b></div>
+    ${colorChips}
   `;
 
-  footerNote.innerHTML = `Master kategori tersedia: ${Object.keys(MASTERS).length}. Warna aksen tersedia: ${COLORS.length} pilihan. Tiap generate cuma bikin base design Square 1080x1080 — di Canva, resize/extend (Magic Expand) tiap base jadi Portrait 1080x1350 &amp; Story 1080x1920, jadi ${totalQty} generate menghasilkan ${finalTotal} template final. Dark/Light diacak dari kantong berisi ${darkTotal} Dark + ${lightTotal} Light, jadi urutannya random tapi totalnya tetap seimbang. Pose, posisi subjek, dan layout teks sepenuhnya bebas ditentuin ChatGPT — cuma kata kunci arah kreatif yang gantian tiap generate (${STYLE_KEYWORDS.length} gaya) biar hasilnya tetap variatif. Ganti Master/Sub/Warna/jumlah base kapan saja, seluruh prompt otomatis update.`;
+  footerNote.innerHTML = `Master kategori tersedia: ${Object.keys(MASTERS).length}. Warna aksen tersedia: ${COLORS.length} pilihan (${selectedColors.length} lagi dipilih, base design dibagi rata &amp; diacak antar warna). Tiap generate cuma bikin base design Square 1080x1080 — di Canva, resize/extend (Magic Expand) tiap base jadi Portrait 1080x1350 &amp; Story 1080x1920, jadi ${totalQty} generate menghasilkan ${finalTotal} template final. Dark/Light diacak dari kantong berisi ${darkTotal} Dark + ${lightTotal} Light, jadi urutannya random tapi totalnya tetap seimbang. Pose, posisi subjek, dan layout teks sepenuhnya bebas ditentuin ChatGPT — cuma kata kunci arah kreatif yang gantian tiap generate (${STYLE_KEYWORDS.length} gaya) biar hasilnya tetap variatif. Ganti Master/Sub/Warna/jumlah base kapan saja, seluruh prompt otomatis update.`;
 
   updateFlyingStats();
 }
@@ -1597,6 +1727,7 @@ fsReset.addEventListener('click', ()=>{
 });
 
 reshuffleBtn.addEventListener('click', ()=>{
+  assignColors(currentInstances, getSelectedColorNames());
   assignDarkLight(currentInstances);
   copiedSet = new Set();
   saveCopiedToStorage();
@@ -1607,7 +1738,10 @@ function renderListing(){
   const master = MASTERS[masterSel.value];
   const sub = master.subs.find(s=>s.name===subSel.value) || master.subs[0];
   const meta = LISTING_META[masterSel.value];
-  const colorName = colorSel.value;
+  const selectedColors = getSelectedColorNames();
+  const colorName = selectedColors.length===1 ? selectedColors[0]
+    : selectedColors.length===2 ? selectedColors.join(' & ')
+    : 'Multi-Color';
   const baseQty = currentInstances.length;
   const finalQty = baseQty * 3;
   // tiap base design jadi 1 Square + 1 Portrait + 1 Story setelah resize
@@ -1653,6 +1787,108 @@ const COLOR_HEX = {
   "Yellow": {dark:"#7A6008", light:"#D4B106"},
 };
 
+// ── Ekstraksi warna dominan dari gambar referensi ───────────────
+function rgbToHsl(r,g,b){
+  r/=255; g/=255; b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b);
+  let h=0, s=0, l=(max+min)/2;
+  if(max!==min){
+    const d=max-min;
+    s = l>0.5 ? d/(2-max-min) : d/(max+min);
+    switch(max){
+      case r: h=(g-b)/d+(g<b?6:0); break;
+      case g: h=(b-r)/d+2; break;
+      case b: h=(r-g)/d+4; break;
+    }
+    h*=60;
+  }
+  return {h,s,l};
+}
+function rgbToHex(r,g,b){
+  return '#'+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0')).join('').toUpperCase();
+}
+function hueToColorWord(h){
+  if(h<15||h>=345) return 'red';
+  if(h<45) return 'orange';
+  if(h<70) return 'yellow';
+  if(h<170) return 'green';
+  if(h<200) return 'teal';
+  if(h<260) return 'blue';
+  if(h<290) return 'purple';
+  return 'pink';
+}
+function extractDominantColor(img){
+  const size = 60;
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  const cx = c.getContext('2d');
+  cx.drawImage(img, 0, 0, size, size);
+  const data = cx.getImageData(0,0,size,size).data;
+  const buckets = {};
+  for(let i=0;i<data.length;i+=4){
+    const r=data[i], g=data[i+1], b=data[i+2], a=data[i+3];
+    if(a<128) continue;
+    const {h,s,l} = rgbToHsl(r,g,b);
+    if(s<0.15 || l<0.08 || l>0.92) continue; // skip abu-abu/hitam/putih, cari warna yang "hidup"
+    const bucket = Math.floor(h/10);
+    if(!buckets[bucket]) buckets[bucket] = {count:0,r:0,g:0,b:0};
+    buckets[bucket].count++;
+    buckets[bucket].r+=r; buckets[bucket].g+=g; buckets[bucket].b+=b;
+  }
+  let best=null;
+  for(const k in buckets){ if(!best || buckets[k].count>buckets[best].count) best=k; }
+  if(!best) return {r:40,g:60,b:110}; // fallback kalau gambar nyaris ga ada warna vivid
+  const bk = buckets[best];
+  return { r: Math.round(bk.r/bk.count), g: Math.round(bk.g/bk.count), b: Math.round(bk.b/bk.count) };
+}
+
+function addCustomColorFromImage(img){
+  const {r,g,b} = extractDominantColor(img);
+  const hex = rgbToHex(r,g,b);
+  const {h} = rgbToHsl(r,g,b);
+  const word = hueToColorWord(h);
+  const name = `Custom ${word[0].toUpperCase()+word.slice(1)} (${hex})`;
+
+  if(!COLORS.some(c=>c.name===name)){
+    const dark = `rich, vividly saturated ${word} (hex ${hex}, extracted from an uploaded reference image) as the dominant background color filling most of the frame — clearly identifiable as ${word}, NOT black or muddy — with a subtle tonal gradient staying within the same hue, white accent linework`;
+    const light = `clean white dominant background with vivid ${word} (hex ${hex}) accent blocks and typography`;
+    COLORS.push({name, dark, light});
+    COLOR_HEX[name] = {dark:hex, light:hex};
+
+    const label = document.createElement('label');
+    label.className = 'color-checkbox';
+    label.innerHTML = `<input type="checkbox" value="${name}"> ${name}`;
+    const cb = label.querySelector('input');
+    cb.addEventListener('change', ()=>{
+      label.classList.toggle('checked', cb.checked);
+      render(true);
+    });
+    colorCheckboxGrid.appendChild(label);
+  }
+
+  // Langsung berlaku ke semua kategori: uncheck warna lain, cuma pakai hasil ekstraksi ini
+  setSelectedColorNames([name]);
+
+  extractedSwatchBox.style.background = hex;
+  extractedSwatchLabel.textContent = `Terdeteksi: ${word} (${hex}) — otomatis diterapkan ke semua prompt`;
+  extractedSwatchPreview.style.display = 'flex';
+
+  render(true);
+}
+
+refImageInput.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    const img = new Image();
+    img.onload = ()=>{ addCustomColorFromImage(img); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
 function roundRectG(ctx,x,y,w,h,r){
   ctx.beginPath();
   ctx.moveTo(x+r,y);
@@ -1666,12 +1902,14 @@ function roundRectG(ctx,x,y,w,h,r){
 function renderBrandGuideline(){
   const master = MASTERS[masterSel.value];
   const sub = master.subs.find(s=>s.name===subSel.value) || master.subs[0];
-  const colorName = colorSel.value;
-  const hex = COLOR_HEX[colorName] || {dark:"#222222", light:"#666666"};
+  const selectedColors = getSelectedColorNames();
+  const primaryHex = COLOR_HEX[selectedColors[0]] || {dark:"#222222", light:"#666666"};
   const team = teamInput.value.trim();
   const baseQty = currentInstances.length || 30;
 
-  const W = 1000, H = 1294;
+  const swH = 130, gap = 20;
+  const paletteBlockH = selectedColors.length * (swH + gap);
+  const W = 1000, H = 1294 + Math.max(0, paletteBlockH - (swH+gap)); // baseline udah termasuk 1 baris warna
   guidelineCanvas.width = W; guidelineCanvas.height = H;
   const ctx = guidelineCanvas.getContext('2d');
 
@@ -1680,7 +1918,7 @@ function renderBrandGuideline(){
 
   // Header band
   const headH = 170;
-  ctx.fillStyle = hex.dark;
+  ctx.fillStyle = primaryHex.dark;
   ctx.fillRect(0,0,W,headH);
   ctx.fillStyle = '#ffffff';
   ctx.font = '700 20px -apple-system, sans-serif';
@@ -1690,41 +1928,47 @@ function renderBrandGuideline(){
   ctx.fillText(`${sub.name} — ${master.label}`, 50, 105);
   ctx.font = '400 18px -apple-system, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.8)';
-  ctx.fillText(`Warna aksen: ${colorName}${team ? '  ·  Brand: '+team.toUpperCase() : ''}`, 50, 140);
+  const colorLabel = selectedColors.length<=3 ? selectedColors.join(', ') : `${selectedColors.length} warna dipilih`;
+  ctx.fillText(`Warna aksen: ${colorLabel}${team ? '  ·  Brand: '+team.toUpperCase() : ''}`, 50, 140);
 
   let y = headH + 50;
 
-  // Section: Color Palette
+  // Section: Color Palette (loop tiap warna yang dipilih)
   ctx.fillStyle = '#111';
   ctx.font = '700 22px -apple-system, sans-serif';
   ctx.fillText('COLOR PALETTE', 50, y);
   y += 25;
-  const swW = 420, swH = 130, gap = 20;
-  // Dark swatch
-  ctx.fillStyle = hex.dark;
-  roundRectG(ctx, 50, y, swW, swH, 10); ctx.fill();
-  ctx.fillStyle = '#fff';
-  ctx.font = '700 16px -apple-system, sans-serif';
-  ctx.fillText('DARK MODE', 68, y+35);
-  ctx.font = '400 13px -apple-system, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.85)';
-  ctx.fillText(hex.dark.toUpperCase(), 68, y+58);
-  ctx.fillText('Saturated color fills majority of frame', 68, y+82);
-  // Light swatch
-  const lx = 50+swW+gap;
-  ctx.fillStyle = '#f7f7f7';
-  roundRectG(ctx, lx, y, swW, swH, 10); ctx.fill();
-  ctx.strokeStyle = '#ddd'; ctx.lineWidth=1; roundRectG(ctx, lx, y, swW, swH, 10); ctx.stroke();
-  ctx.fillStyle = hex.light;
-  ctx.fillRect(lx+18, y+18, 60, 60);
-  ctx.fillStyle = '#111';
-  ctx.font = '700 16px -apple-system, sans-serif';
-  ctx.fillText('LIGHT MODE', lx+92, y+35);
-  ctx.font = '400 13px -apple-system, sans-serif';
-  ctx.fillStyle = '#555';
-  ctx.fillText(hex.light.toUpperCase()+' accent', lx+92, y+58);
-  ctx.fillText('White base, color as accent only', lx+92, y+82);
-  y += swH + 45;
+  const swW = 420;
+
+  selectedColors.forEach(cn=>{
+    const hex = COLOR_HEX[cn] || {dark:"#222222", light:"#666666"};
+    // Dark swatch
+    ctx.fillStyle = hex.dark;
+    roundRectG(ctx, 50, y, swW, swH, 10); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = '700 16px -apple-system, sans-serif';
+    ctx.fillText(`${cn.toUpperCase()} — DARK`, 68, y+35);
+    ctx.font = '400 13px -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText(hex.dark.toUpperCase(), 68, y+58);
+    ctx.fillText('Saturated color fills majority of frame', 68, y+82);
+    // Light swatch
+    const lx = 50+swW+gap;
+    ctx.fillStyle = '#f7f7f7';
+    roundRectG(ctx, lx, y, swW, swH, 10); ctx.fill();
+    ctx.strokeStyle = '#ddd'; ctx.lineWidth=1; roundRectG(ctx, lx, y, swW, swH, 10); ctx.stroke();
+    ctx.fillStyle = hex.light;
+    ctx.fillRect(lx+18, y+18, 60, 60);
+    ctx.fillStyle = '#111';
+    ctx.font = '700 16px -apple-system, sans-serif';
+    ctx.fillText(`${cn.toUpperCase()} — LIGHT`, lx+92, y+35);
+    ctx.font = '400 13px -apple-system, sans-serif';
+    ctx.fillStyle = '#555';
+    ctx.fillText(hex.light.toUpperCase()+' accent', lx+92, y+58);
+    ctx.fillText('White base, color as accent only', lx+92, y+82);
+    y += swH + gap;
+  });
+  y += 25;
 
   // Section: Typography
   ctx.fillStyle = '#111';
@@ -1782,6 +2026,7 @@ function renderBrandGuideline(){
     `Base design size: Square 1080 x 1080 pixels (${baseQty} base designs)`,
     'Resize to Portrait 1080x1350 & Story 1080x1920 via Canva Magic Expand',
     'Dark : Light ratio — 50 : 50 (randomized per generate)',
+    `Colors used: ${selectedColors.join(', ')} (distributed evenly across base designs)`,
     `Final deliverable: ${baseQty} x 3 = ${baseQty*3} templates total`,
   ];
   specs.forEach(s=>{
@@ -1846,7 +2091,7 @@ masterSel.addEventListener('change', ()=>{
   populateSubSel(masterSel.value);
   render(true);
 });
-[subSel, colorSel, genderSel, teamInput, baseCountInput].forEach(el=>{
+[subSel, genderSel, teamInput, baseCountInput].forEach(el=>{
   el.addEventListener('input', ()=>render(true));
   el.addEventListener('change', ()=>render(true));
 });
