@@ -638,11 +638,11 @@ const MASTERS = {
     label: "Kuliner / F&B",
     hasPerson: false,
     subs: [
-      {name:"Restaurant", subject:"an elegant plated signature dish with garnish, shallow depth of field", setting:"upscale restaurant dining table"},
-      {name:"Cafe", subject:"a specialty coffee drink and a pastry arranged aesthetically", setting:"cozy cafe counter"},
-      {name:"Bakery", subject:"freshly baked bread and pastries arranged on a wooden board", setting:"bakery display counter"},
-      {name:"Food Truck", subject:"street food served in plain unbranded takeaway packaging", setting:"food truck serving window"},
-      {name:"Catering", subject:"a catering buffet spread with multiple dishes", setting:"event catering table"},
+      {name:"Restaurant", subject:"an elegant plated signature dish with garnish, shallow depth of field", setting:"upscale restaurant dining table", placeholderPhoto:true},
+      {name:"Cafe", subject:"a specialty coffee drink and a pastry arranged aesthetically", setting:"cozy cafe counter", placeholderPhoto:true},
+      {name:"Bakery", subject:"freshly baked bread and pastries arranged on a wooden board", setting:"bakery display counter", placeholderPhoto:true},
+      {name:"Food Truck", subject:"street food served in plain unbranded takeaway packaging", setting:"food truck serving window", placeholderPhoto:true},
+      {name:"Catering", subject:"a catering buffet spread with multiple dishes", setting:"event catering table", placeholderPhoto:true},
     ],
     categories: [
       {no:1, cat:"Menu Highlight", qty:8},{no:2, cat:"New Dish Launch", qty:6},
@@ -660,10 +660,10 @@ const MASTERS = {
     label: "IT / Tech",
     hasPerson: false,
     subs: [
-      {name:"Website", subject:"a clean website interface mockup displayed on a laptop screen", setting:"modern minimal desk workspace"},
-      {name:"Mobile App", subject:"a mobile app interface mockup displayed on a smartphone screen", setting:"minimal flat-lay desk with accessories"},
-      {name:"SaaS", subject:"a dashboard interface mockup displayed on a laptop screen", setting:"modern office workspace"},
-      {name:"Game Dev", subject:"a video game interface mockup displayed on a gaming monitor", setting:"gaming desk setup with rgb lighting"},
+      {name:"Website", subject:"a clean website interface mockup displayed on a laptop screen", setting:"modern minimal desk workspace", placeholderPhoto:true},
+      {name:"Mobile App", subject:"a mobile app interface mockup displayed on a smartphone screen", setting:"minimal flat-lay desk with accessories", placeholderPhoto:true},
+      {name:"SaaS", subject:"a dashboard interface mockup displayed on a laptop screen", setting:"modern office workspace", placeholderPhoto:true},
+      {name:"Game Dev", subject:"a video game interface mockup displayed on a gaming monitor", setting:"gaming desk setup with rgb lighting", placeholderPhoto:true},
     ],
     categories: [
       {no:1, cat:"Feature Announcement", qty:8},{no:2, cat:"App Update / Changelog", qty:6},
@@ -683,8 +683,8 @@ const MASTERS = {
     subs: [
       {name:"Streetwear", subject:"a photorealistic generic {gender} model wearing streetwear clothing, generic facial features not resembling any real person", setting:"urban street background"},
       {name:"Boutique", subject:"a photorealistic generic {gender} model wearing an elegant boutique outfit, generic facial features not resembling any real person", setting:"boutique interior"},
-      {name:"Shoes", subject:"a close-up product shot of a stylish shoe", setting:"minimal studio background"},
-      {name:"Accessories", subject:"a close-up product shot of a fashion accessory", setting:"minimal studio background"},
+      {name:"Shoes", subject:"a close-up product shot of a stylish shoe", setting:"minimal studio background", placeholderPhoto:true},
+      {name:"Accessories", subject:"a close-up product shot of a fashion accessory", setting:"minimal studio background", placeholderPhoto:true},
     ],
     categories: [
       {no:1, cat:"New Arrival", qty:8},{no:2, cat:"Outfit Of The Day", qty:6},
@@ -702,7 +702,7 @@ const MASTERS = {
     label: "Beauty & Skincare",
     hasPerson: true,
     subs: [
-      {name:"Skincare", subject:"a close-up product shot of a skincare bottle with soft natural lighting", setting:"minimal clean studio background"},
+      {name:"Skincare", subject:"a close-up product shot of a skincare bottle with soft natural lighting", setting:"minimal clean studio background", placeholderPhoto:true},
       {name:"Makeup", subject:"a photorealistic generic {gender} model with an elegant makeup look, generic facial features not resembling any real person", setting:"beauty studio background"},
       {name:"Hair Salon", subject:"a photorealistic generic {gender} model with a styled hairstyle, generic facial features not resembling any real person", setting:"hair salon interior"},
       {name:"Nail Salon", subject:"a close-up shot of manicured nails with nail art", setting:"nail salon table setup"},
@@ -744,8 +744,8 @@ const MASTERS = {
     label: "Real Estate",
     hasPerson: true,
     subs: [
-      {name:"Residential", subject:"an exterior photo of a modern residential house", setting:"suburban neighborhood street"},
-      {name:"Commercial", subject:"an exterior photo of a modern commercial building", setting:"city business district"},
+      {name:"Residential", subject:"an exterior photo of a modern residential house", setting:"suburban neighborhood street", placeholderPhoto:true},
+      {name:"Commercial", subject:"an exterior photo of a modern commercial building", setting:"city business district", placeholderPhoto:true},
       {name:"Agent Personal Brand", subject:"a photorealistic generic {gender} real estate agent in professional attire, generic facial features not resembling any real person", setting:"office or open house setting"},
     ],
     categories: [
@@ -784,10 +784,10 @@ const MASTERS = {
     label: "Photography & Videography",
     hasPerson: false,
     subs: [
-      {name:"Wedding", subject:"a beautifully composed candid wedding moment scene", setting:"wedding venue"},
-      {name:"Portrait", subject:"a professionally lit portrait photography scene", setting:"photography studio"},
-      {name:"Product", subject:"a professionally lit product photography setup", setting:"photography studio with product on a pedestal"},
-      {name:"Event", subject:"a dynamic event photography moment scene", setting:"event venue"},
+      {name:"Wedding", subject:"a beautifully composed candid wedding moment scene", setting:"wedding venue", placeholderPhoto:true},
+      {name:"Portrait", subject:"a professionally lit portrait photography scene", setting:"photography studio", placeholderPhoto:true},
+      {name:"Product", subject:"a professionally lit product photography setup", setting:"photography studio with product on a pedestal", placeholderPhoto:true},
+      {name:"Event", subject:"a dynamic event photography moment scene", setting:"event venue", placeholderPhoto:true},
     ],
     categories: [
       {no:1, cat:"Portfolio Highlight", qty:8},{no:2, cat:"Behind The Lens", qty:6},
@@ -805,7 +805,7 @@ const MASTERS = {
     label: "Education / Course",
     hasPerson: true,
     subs: [
-      {name:"Online Course", subject:"a laptop displaying an online course interface on a desk", setting:"cozy study desk setup"},
+      {name:"Online Course", subject:"a laptop displaying an online course interface on a desk", setting:"cozy study desk setup", placeholderPhoto:true},
       {name:"Tutoring", subject:"a photorealistic generic {gender} tutor helping a student study, generic facial features not resembling any real person", setting:"study room"},
       {name:"School / Bootcamp", subject:"a group of generic students in a classroom or bootcamp setting, generic facial features not resembling any real person", setting:"classroom or bootcamp venue"},
     ],
@@ -826,7 +826,7 @@ const MASTERS = {
     hasPerson: false,
     subs: [
       {name:"Travel Agent", subject:"a scenic travel destination landscape photo", setting:"tropical or scenic destination"},
-      {name:"Hotel / Resort", subject:"an inviting hotel or resort exterior and pool photo", setting:"resort poolside"},
+      {name:"Hotel / Resort", subject:"an inviting hotel or resort exterior and pool photo", setting:"resort poolside", placeholderPhoto:true},
       {name:"Tour Guide", subject:"a scenic tour destination photo with a small generic {gender} tour guide figure, generic facial features not resembling any real person", setting:"tourist landmark area"},
     ],
     categories: [
@@ -845,7 +845,7 @@ const MASTERS = {
     label: "Automotive",
     hasPerson: false,
     subs: [
-      {name:"Car Dealer", subject:"a sleek generic car parked in a showroom, no visible brand logos", setting:"car showroom"},
+      {name:"Car Dealer", subject:"a sleek generic car parked in a showroom, no visible brand logos", setting:"car showroom", placeholderPhoto:true},
       {name:"Detailing", subject:"a car undergoing a detailing and wash service, no visible brand logos", setting:"detailing garage"},
       {name:"Workshop / Bengkel", subject:"a car undergoing repair in a workshop, no visible brand logos", setting:"auto workshop"},
     ],
@@ -925,8 +925,8 @@ const MASTERS = {
     label: "Music & Entertainment",
     hasPerson: true,
     subs: [
-      {name:"Musician", subject:"a photorealistic generic {gender} musician performing with an instrument, generic facial features not resembling any real person", setting:"concert stage with dramatic lighting"},
-      {name:"DJ", subject:"a photorealistic generic {gender} DJ performing at a mixing booth with dynamic lighting, generic facial features not resembling any real person", setting:"nightclub or event venue"},
+      {name:"Musician", subject:"a photorealistic generic {gender} musician performing with an instrument, generic facial features not resembling any real person", setting:"concert stage with dramatic lighting", placeholderPhoto:true},
+      {name:"DJ", subject:"a photorealistic generic {gender} DJ performing at a mixing booth with dynamic lighting, generic facial features not resembling any real person", setting:"nightclub or event venue", placeholderPhoto:true},
       {name:"Event Organizer", subject:"a professionally set up event stage with lighting, no people", setting:"event venue"},
     ],
     categories: [
@@ -945,9 +945,9 @@ const MASTERS = {
     label: "Home & Interior",
     hasPerson: false,
     subs: [
-      {name:"Interior Design", subject:"a beautifully styled modern interior room", setting:"modern living room"},
-      {name:"Furniture", subject:"a stylish furniture piece in a styled room setting", setting:"styled interior room"},
-      {name:"Renovation", subject:"a home renovation before-after scene", setting:"under-renovation home interior"},
+      {name:"Interior Design", subject:"a beautifully styled modern interior room", setting:"modern living room", placeholderPhoto:true},
+      {name:"Furniture", subject:"a stylish furniture piece in a styled room setting", setting:"styled interior room", placeholderPhoto:true},
+      {name:"Renovation", subject:"a home renovation before-after scene", setting:"under-renovation home interior", placeholderPhoto:true},
     ],
     categories: [
       {no:1, cat:"Portfolio Highlight", qty:7},{no:2, cat:"Before-After Transformation", qty:6},
@@ -1093,15 +1093,36 @@ const STYLE_KEYWORDS = [
   "sleek broadcast-graphics style, like a TV network overlay",
 ];
 
+// Zona komposisi yang gantian tiap generate — generik, jalan buat subjek apapun
+// (orang, rumah, produk, dll), bukan cuma "bebas" doang yang terbukti gak cukup
+// bikin variatif.
+const ZONE_KEYWORDS = [
+  "main subject positioned on the LEFT side of the frame",
+  "main subject positioned on the RIGHT side of the frame",
+  "main subject CENTERED in the frame",
+  "main subject filling the LOWER HALF of the frame",
+  "main subject large-scale, filling most of the BACKGROUND",
+  "main subject smaller-scale, framed within ONE CORNER of the frame",
+  "split-diagonal composition with the main subject on ONE diagonal half",
+  "main subject cropped close, showing only a detail or portion",
+  "main subject positioned BOTTOM-LEFT",
+  "main subject positioned TOP-RIGHT",
+  "main subject small-scale and CENTERED within an open, spacious background",
+  "main subject positioned to ONE SIDE, leaving the rest of the frame open for text",
+];
+
 const EXTEND_FRIENDLY_NOTE = "Design a complete, well-balanced square composition that fills the entire frame naturally — do not leave large empty or unfinished areas. Just keep any critical headline text with a small safety margin away from the very bottom edge of the frame.";
 
-function buildPrompt(master, sub, color, mode, gender, team, categoryName, styleHint){
+function buildPrompt(master, sub, color, mode, gender, team, categoryName, styleHint, zoneHint){
   const paletteText = mode==="Dark" ? color.dark : color.light;
   const noModel = master.noModelCategories.includes(categoryName);
+  const usePlaceholder = !!sub.placeholderPhoto && !noModel;
   let subjectText = sub.subject.replace(/\{gender\}/g, gender);
   let p;
   if(noModel){
     p = `${master.label} - ${sub.name} themed social media graphic background, ${paletteText}, clean modern design aesthetic with minimal decorative clutter, no scribbles, scratch marks, or busy overlapping graphic elements, no people or products depicted, subtle thematic iconography related to ${master.label}`;
+  } else if(usePlaceholder){
+    p = `${master.label} - ${sub.name} themed social media graphic, ${paletteText}, professional dramatic lighting, high contrast modern aesthetic, clean composition with minimal decorative clutter, no scribbles, scratch marks, or busy overlapping graphic elements. Leave a clean, clearly bordered empty rectangular placeholder area as the main visual focus of the composition — do NOT generate an actual photo, illustration, or object inside it, just a neutral empty frame (e.g. plain light gray fill with a simple border) — sized prominently since the user will insert their own photo there later. Fully design all other decorative elements (banners, badges, borders, typography, background) around this empty placeholder so the template looks complete and professional even before a photo is added, no visible real-world brand logos, trademarks, or copyrighted marks of any kind, ${sub.setting}-inspired decorative background elements`;
   } else {
     p = `${master.label} - ${sub.name} themed social media graphic, ${paletteText}, professional dramatic lighting, high contrast modern aesthetic, clean composition with minimal decorative clutter, no scribbles, scratch marks, or busy overlapping graphic elements, ${subjectText}, no visible real-world brand logos, trademarks, or copyrighted marks of any kind, ${sub.setting} in the background`;
   }
@@ -1109,9 +1130,11 @@ function buildPrompt(master, sub, color, mode, gender, team, categoryName, style
     p += `, "${team.trim().toUpperCase()}" brand name subtly visible`;
   }
   if(noModel){
-    p += `. Design this as a "${categoryName}" social media template for ${master.label} (${sub.name}). Creative direction for this generation: ${styleHint}. Keep it simple and clean with NO people or products depicted anywhere in the image — focus on a clear structured area for text/information. Include bold poster-style typography (a short title plus supporting content area). Wording, layout, composition, and text placement are entirely up to your own creative discretion as long as it fits the "${categoryName}" theme and stays readable — make this generation visually distinct from other generations.`;
+    p += `. Design this as a "${categoryName}" social media template for ${master.label} (${sub.name}). Creative direction for this generation: ${styleHint}. Composition: ${zoneHint} — everything else about the exact layout and framing is your creative choice. Keep it simple and clean with NO people or products depicted anywhere in the image — focus on a clear structured area for text/information. Include bold poster-style typography (a short title plus supporting content area). Wording and text placement are entirely up to your own creative discretion as long as it fits the "${categoryName}" theme and stays readable — make this generation visually distinct from other generations.`;
+  } else if(usePlaceholder){
+    p += `. Design this as a "${categoryName}" social media template for ${master.label} (${sub.name}). Creative direction for this generation: ${styleHint}. Composition: ${zoneHint} for the empty placeholder area — everything else about the exact layout and framing is your creative choice. Include bold poster-style typography (one main headline plus a short supporting tagline) placed around the placeholder, wording and text placement up to you, as long as it fits the "${categoryName}" theme and stays readable — make this generation visually distinct from other generations.`;
   } else {
-    p += `. Design this as a "${categoryName}" social media template for ${master.label} (${sub.name}). Creative direction for this generation: ${styleHint}. Pose, camera angle, composition, subject placement, and text placement are entirely up to your own creative discretion. Include bold poster-style typography (one main headline plus a short supporting tagline), wording and styling also up to you, as long as it fits the "${categoryName}" theme and stays readable — make this generation visually distinct from other generations.`;
+    p += `. Design this as a "${categoryName}" social media template for ${master.label} (${sub.name}). Creative direction for this generation: ${styleHint}. Composition: ${zoneHint} — everything else about the exact pose, camera angle, and framing is your creative choice. Include bold poster-style typography (one main headline plus a short supporting tagline), wording and text placement also up to you, as long as it fits the "${categoryName}" theme and stays readable — make this generation visually distinct from other generations.`;
   }
   p += ` ${EXTEND_FRIENDLY_NOTE}`;
   p += ` Final image dimensions must be ${BASE_ASPECT_TEXT}.`;
@@ -1157,22 +1180,43 @@ function assignDarkLight(instances){
 }
 
 function assignStyles(instances){
-  instances.forEach((inst,i)=>{ inst.styleHint = STYLE_KEYWORDS[i % STYLE_KEYWORDS.length]; });
+  instances.forEach((inst,i)=>{
+    inst.styleHint = STYLE_KEYWORDS[i % STYLE_KEYWORDS.length];
+    inst.zoneHint = ZONE_KEYWORDS[i % ZONE_KEYWORDS.length];
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
 // LISTING GENERATOR — Title, Description, Tags (13, max 20 char/tag)
 // ══════════════════════════════════════════════════════════════
-function buildListingTitle(master, sub, meta, totalQty){
-  return `${sub.name} ${meta.shortLabel} Templates | ${meta.shortLabel} Instagram Posts | ${master.categories[0].cat} ${meta.shortLabel} Marketing Kit | Editable Best Selling Canva Templates`;
+function buildListingTitle(master, sub, meta, totalQty, colorName){
+  // Susun per-segmen (dipisah " | "), biar kalau kepanjangan bisa dipotong dari
+  // segmen paling belakang dulu — bukan hard-cut mentah di tengah kalimat.
+  // "Canva" sengaja ditaruh di segmen PALING DEPAN biar keyword ini ga pernah
+  // ikut kepotong walau title-nya harus dipendekin.
+  const segments = [
+    `${sub.name} ${colorName} Canva Templates`,
+    `${meta.shortLabel} Instagram Posts`,
+    `${master.categories[0].cat} ${meta.shortLabel} Marketing Kit`,
+    `Editable Best Selling Templates`,
+  ];
+  let title = segments.join(' | ');
+  while(title.length > 140 && segments.length > 1){
+    segments.pop();
+    title = segments.join(' | ');
+  }
+  if(title.length > 140){
+    title = title.slice(0, 140).trim();
+  }
+  return title;
 }
 
-function buildListingDescription(master, sub, meta, totalQty, sizeCounts){
+function buildListingDescription(master, sub, meta, totalQty, sizeCounts, colorName){
   const catLines = master.categories.slice(0, 12).map(c=>c.cat).join('\n');
   const perfectForLines = meta.perfectFor.join('\n');
-  const keywordLines = buildTagCandidates(master, sub, meta).slice(0,5).join('\n');
+  const keywordLines = buildTagCandidates(master, sub, meta, colorName).slice(0,5).join('\n');
 
-  return `Level up your ${meta.audienceNoun}'s social media with this high-impact ${sub.name} ${meta.shortLabel} Canva Template Bundle ${meta.emoji}
+  return `Level up your ${meta.audienceNoun}'s social media with this high-impact ${sub.name} ${colorName} ${meta.shortLabel} Canva Template Bundle ${meta.emoji}
 
 Designed for ${meta.audiencePhrase}, this all-in-one graphics kit helps you create professional, eye-catching posts in minutes—no design skills needed.
 
@@ -1189,6 +1233,7 @@ ${catLines}
 
 ✨ WHY YOU'LL LOVE IT
 ✔ Fully customizable in Canva (drag & drop easy)
+✔ Colors, text, and photos are 100% editable — shown in ${colorName}, but change to match your own brand in seconds
 ✔ No Canva Pro required
 ✔ Modern, bold, high-converting ${meta.shortLabel.toLowerCase()} design
 ✔ Perfect for ${sub.name.toLowerCase()} ${meta.audienceNoun}s
@@ -1211,10 +1256,13 @@ Basic Canva knowledge recommended`;
 }
 
 // Kumpulan kandidat keyword/tag, dipakai buat Tags DAN buat baris keyword di deskripsi
-function buildTagCandidates(master, sub, meta){
+function buildTagCandidates(master, sub, meta, colorName){
   const subL = sub.name.toLowerCase();
   const labelL = meta.shortLabel.toLowerCase();
+  const colorShort = (colorName || "").split(' ')[0].toLowerCase().trim();
   const specific = [
+    `${colorShort} ${subL} kit`,
+    `${colorShort} ${labelL} kit`,
     `${subL} social media`,
     `${subL} templates`,
     `${subL} canva kit`,
@@ -1249,8 +1297,8 @@ function buildTagCandidates(master, sub, meta){
   return valid;
 }
 
-function buildListingTags(master, sub, meta){
-  const candidates = buildTagCandidates(master, sub, meta);
+function buildListingTags(master, sub, meta, colorName){
+  const candidates = buildTagCandidates(master, sub, meta, colorName);
   return candidates.slice(0, 13);
 }
 
@@ -1351,7 +1399,7 @@ function generatePromptsForInstances(){
   const gender = genderSel.value;
   const team = teamInput.value;
   currentInstances.forEach(inst=>{
-    inst.prompt = buildPrompt(master, sub, color, inst.mode, gender, team, inst.catName, inst.styleHint);
+    inst.prompt = buildPrompt(master, sub, color, inst.mode, gender, team, inst.catName, inst.styleHint, inst.zoneHint);
   });
 }
 
@@ -1559,14 +1607,15 @@ function renderListing(){
   const master = MASTERS[masterSel.value];
   const sub = master.subs.find(s=>s.name===subSel.value) || master.subs[0];
   const meta = LISTING_META[masterSel.value];
+  const colorName = colorSel.value;
   const baseQty = currentInstances.length;
   const finalQty = baseQty * 3;
   // tiap base design jadi 1 Square + 1 Portrait + 1 Story setelah resize
   const sizeCounts = { Square: baseQty, Portrait: baseQty, Story: baseQty };
 
-  const title = buildListingTitle(master, sub, meta, finalQty);
-  const desc = buildListingDescription(master, sub, meta, finalQty, sizeCounts);
-  const tags = buildListingTags(master, sub, meta);
+  const title = buildListingTitle(master, sub, meta, finalQty, colorName);
+  const desc = buildListingDescription(master, sub, meta, finalQty, sizeCounts, colorName);
+  const tags = buildListingTags(master, sub, meta, colorName);
 
   listingTitleEl.value = title;
   listingDescEl.value = desc;
