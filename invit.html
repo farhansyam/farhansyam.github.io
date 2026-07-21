@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LenaTemplate Invitation Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --pink:#e8a0bf; --pink-dark:#c96b95; --cream:#fff9f5; --ink:#3a2e35;
+    --accent:#7a5c7e; --line:#f0dde6; --gold:#c9a24b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:linear-gradient(160deg,#fff5f8,#fdf3ec 60%,#fdf7f2);
+    color:var(--ink); padding:24px;
+  }
+  .wrap{max-width:1100px;margin:0 auto;}
+  h1{font-size:26px;margin:0 0 4px;color:var(--pink-dark);}
+  .sub{color:#8a7480;margin:0 0 24px;font-size:14px;}
+  .card{
+    background:#fff;border-radius:16px;padding:22px;margin-bottom:20px;
+    box-shadow:0 4px 18px rgba(180,120,150,0.10);border:1px solid var(--line);
+  }
+  .card h2{margin:0 0 14px;font-size:16px;color:var(--accent);display:flex;align-items:center;gap:8px;}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+  @media(max-width:720px){.row,.row3{grid-template-columns:1fr;}}
+  label{display:block;font-size:12.5px;font-weight:600;color:var(--accent);margin-bottom:5px;}
+  select,input[type=text]{
+    width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);
+    font-size:14px;background:#fffdfb;color:var(--ink);
+  }
+  select:focus,input:focus{outline:none;border-color:var(--pink);}
+  .season-tag{
+    display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;margin-left:6px;
+    background:var(--line);color:var(--pink-dark);font-weight:600;
+  }
+  .btn{
+    background:linear-gradient(135deg,var(--pink),var(--pink-dark));color:#fff;border:none;
+    padding:12px 22px;border-radius:10px;font-size:14.5px;font-weight:700;cursor:pointer;
+    box-shadow:0 3px 10px rgba(201,107,149,0.35);
+  }
+  .btn:hover{opacity:0.92;}
+  .btn.secondary{
+    background:#fff;color:var(--pink-dark);border:1.5px solid var(--pink);box-shadow:none;
+  }
+  .btn.small{padding:6px 12px;font-size:12px;border-radius:8px;}
+  .output-box{
+    position:relative;background:#fffaf6;border:1.5px dashed var(--line);border-radius:12px;
+    padding:16px 44px 16px 16px;font-size:13.5px;line-height:1.6;white-space:pre-wrap;
+    color:#4a3a42;margin-bottom:10px;min-height:40px;
+  }
+  .copy-btn{
+    position:absolute;top:10px;right:10px;background:var(--accent);color:#fff;border:none;
+    border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer;
+  }
+  .copy-btn:hover{background:var(--pink-dark);}
+  .tag-pill{
+    display:inline-block;background:var(--line);color:var(--pink-dark);padding:4px 10px;
+    border-radius:20px;font-size:12px;margin:3px;font-weight:600;
+  }
+  .meta-line{font-size:12px;color:#a08a94;margin-top:-6px;margin-bottom:14px;}
+  .footer-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+  .stats{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  .stat{
+    background:#fff;border-radius:12px;padding:12px 18px;border:1px solid var(--line);
+    text-align:center;min-width:110px;
+  }
+  .stat b{display:block;font-size:20px;color:var(--pink-dark);}
+  .stat span{font-size:11px;color:#a08a94;}
+  .search-bar{margin-bottom:14px;}
+  #themeSearch{width:100%;}
+  .saved-list{max-height:280px;overflow-y:auto;}
+  .saved-item{
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;
+    display:flex;justify-content:space-between;align-items:center;font-size:13px;background:#fffaf6;
+  }
+  .saved-item .del{cursor:pointer;color:#c96b95;font-weight:700;background:none;border:none;font-size:15px;}
+  .empty{color:#b8a2ac;font-size:13px;padding:8px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>💌 LenaTemplate — Invitation Prompt Generator</h1>
+  <p class="sub">Generate AI image prompt (background/ornamen tanpa teks) + title + deskripsi + tags buat listing Canva invitation, ukuran 5x7 inch.</p>
+
+  <div class="stats">
+    <div class="stat"><b id="statTotal">0</b><span>TOTAL TEMA</span></div>
+    <div class="stat"><b id="statCat">0</b><span>KATEGORI</span></div>
+    <div class="stat"><b id="statSaved">0</b><span>DISIMPAN</span></div>
+  </div>
+
+  <div class="card">
+    <h2>🎯 Pilih Tema</h2>
+    <div class="search-bar">
+      <label>Cari tema (nama / musim)</label>
+      <input type="text" id="themeSearch" placeholder="cth: bunny, summer, wedding...">
+    </div>
+    <div class="row3">
+      <div>
+        <label>Kategori</label>
+        <select id="catSelect"></select>
+      </div>
+      <div>
+        <label>Tema</label>
+        <select id="themeSelect"></select>
+      </div>
+      <div>
+        <label>Musim / Season</label>
+        <select id="seasonFilter">
+          <option value="all">Semua Musim</option>
+          <option value="Spring">Spring</option>
+          <option value="Summer">Summer</option>
+          <option value="Fall">Fall</option>
+          <option value="Winter">Winter</option>
+          <option value="All Year">All Year / Evergreen</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Palette Mood</label>
+        <select id="paletteSelect">
+          <option>Pastel Soft</option>
+          <option>Bright Bold Modern</option>
+          <option>Elegant Neutral & Gold</option>
+          <option>Jewel Tone Rich</option>
+          <option>Boho Earthy</option>
+          <option>Black & Gold Glam</option>
+        </select>
+      </div>
+      <div>
+        <label>Layout Style</label>
+        <select id="layoutSelect">
+          <option>Centered Symmetrical Frame</option>
+          <option>Asymmetrical Side Accent</option>
+          <option>Full Decorative Border Frame</option>
+          <option>Top Arch with Bottom Details</option>
+          <option>Corner Ornament Minimal</option>
+        </select>
+      </div>
+    </div>
+    <div class="meta-line" id="themeMeta"></div>
+    <button class="btn" onclick="generateAll()">✨ Generate Prompt + Listing</button>
+    <button class="btn secondary" onclick="saveCurrent()">💾 Simpan ke List</button>
+  </div>
+
+  <div class="card" id="resultCard" style="display:none;">
+    <h2>🖼️ AI Image Prompt <span style="font-weight:400;color:#a08a94;font-size:12px;">(5x7 in · 1500x2100px · 300dpi · portrait)</span></h2>
+    <div class="output-box" id="promptOut"><button class="copy-btn" onclick="copyBox('promptOut')">Copy</button></div>
+
+    <h2 style="margin-top:20px;">📝 Judul Listing Etsy</h2>
+    <div class="output-box" id="titleOut"><button class="copy-btn" onclick="copyBox('titleOut')">Copy</button></div>
+
+    <h2 style="margin-top:20px;">📄 Deskripsi Listing</h2>
+    <div class="output-box" id="descOut"><button class="copy-btn" onclick="copyBox('descOut')">Copy</button></div>
+
+    <h2 style="margin-top:20px;">🏷️ Tags (13, maks 20 karakter, dipisah koma)</h2>
+    <div class="output-box" id="tagsOut"><button class="copy-btn" onclick="copyBox('tagsOut')">Copy</button></div>
+    <div id="tagsPillWrap"></div>
+
+    <h2 style="margin-top:20px;">🔗 Canva Template Link</h2>
+    <div class="row" style="grid-template-columns:1fr;">
+      <div>
+        <label>Paste link Canva template disini (buat dimasukin ke PDF delivery)</label>
+        <input type="text" id="canvaLinkInput" placeholder="https://www.canva.com/design/....">
+      </div>
+    </div>
+    <div class="footer-actions">
+      <button class="btn secondary" onclick="exportListingPDF()">📄 Export PDF (Cover + Link Canva)</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 List Tema Tersimpan</h2>
+    <div class="saved-list" id="savedList"><div class="empty">Belum ada tema disimpan.</div></div>
+    <div class="footer-actions">
+      <button class="btn small secondary" onclick="exportSaved()">⬇️ Export .txt</button>
+      <button class="btn small secondary" onclick="clearSaved()">🗑️ Clear All</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const THEMES = {"birthday_kids": {"label": "👶 Birthday - Kids", "items": [{"n": "Bunny Garden Party", "s": "Spring", "k": "cute cartoon bunny rabbit, spring garden with tulips and daisies, floral wreath border, soft pastel green and blush pink"}, {"n": "Butterfly Garden", "s": "Spring", "k": "colorful butterflies fluttering, wildflower meadow, watercolor floral border, soft lavender and mint palette"}, {"n": "Ladybug Garden", "s": "Spring", "k": "cheerful red and black ladybugs, daisies and green leaves, dew drops, bright garden palette"}, {"n": "Springtime Egg Hunt", "s": "Spring", "k": "pastel speckled eggs, bunny ear ribbon, tulip basket, soft yellow and lilac"}, {"n": "Poolside Vacay", "s": "Summer", "k": "pool floats and inflatables, palm leaves, sunshine rays, tropical drinks, sky blue and coral"}, {"n": "Tropical Luau", "s": "Summer", "k": "hibiscus flowers, tiki torches, pineapples, monstera leaves, sunset orange and teal"}, {"n": "Mermaid Under the Sea", "s": "Summer", "k": "mermaid tail scales, seashells, coral reef, bubbles, aqua teal and lavender"}, {"n": "Ice Cream Social", "s": "Summer", "k": "melting ice cream cones, rainbow sprinkles, candy swirls, pastel bubblegum palette"}, {"n": "Watermelon Splash", "s": "Summer", "k": "watermelon slices, summer droplets, tropical leaves, hot pink and lime green"}, {"n": "Dino Safari Adventure", "s": "All Year", "k": "friendly cartoon dinosaurs, palm fronds, dino footprints, olive green and burnt orange"}, {"n": "Space Odyssey Rocket", "s": "All Year", "k": "rocket ship, planets and stars, comet trails, navy blue and gold galaxy"}, {"n": "Unicorn Fantasy", "s": "All Year", "k": "magical unicorn, rainbow arc, clouds, glitter stars, pastel rainbow palette"}, {"n": "Fairy Tale Forest", "s": "All Year", "k": "woodland fairies, toadstool mushrooms, enchanted trees, pixie dust sparkle, sage and gold"}, {"n": "Pirate Adventure", "s": "All Year", "k": "pirate ship, treasure map, skull flag, gold coins, navy and weathered red"}, {"n": "Princess Castle", "s": "All Year", "k": "fairytale castle turret, tiara, climbing roses, soft blush pink and gold"}, {"n": "Construction Zone", "s": "All Year", "k": "construction trucks and cones, hard hat, caution stripes, mustard yellow and charcoal"}, {"n": "Jungle Safari", "s": "All Year", "k": "safari animals, palm leaves, binoculars, animal print accents, earthy green and tan"}, {"n": "Circus Carnival", "s": "All Year", "k": "circus tent stripes, balloons, popcorn, carnival tickets, primary red yellow blue"}, {"n": "Pumpkin Patch Bash", "s": "Fall", "k": "pumpkins, autumn leaves, hay bale texture, gingham ribbon, warm orange and brown"}, {"n": "Woodland Forest Animals", "s": "Fall", "k": "fox, deer and owl, forest leaves, pinecones, warm terracotta and forest green"}, {"n": "Winter Wonderland", "s": "Winter", "k": "snowflakes, pine branches, soft sparkle, icy blue and white"}, {"n": "Wild One Safari (1st Birthday)", "s": "All Year", "k": "jungle leaves, safari animal, boho neutral tones, number one balloon accent"}, {"n": "Two the Moon (2nd Birthday)", "s": "All Year", "k": "crescent moon, stars, rocket, navy blue and gold, number two accent"}]}, "birthday_adult": {"label": "🎂 Birthday - Adult & Milestone", "items": [{"n": "Dirty Thirty Glam", "s": "All Year", "k": "disco ball, black and gold confetti, bold modern typography frame, champagne bubbles"}, {"n": "Fabulous Forty", "s": "All Year", "k": "rose gold foil texture, elegant script accents, champagne glass silhouette"}, {"n": "Golden Fifty Celebration", "s": "All Year", "k": "gold foil border, classic elegant frame, deep navy background"}, {"n": "Great Gatsby 20s Glam", "s": "All Year", "k": "art deco geometric border, gold feathers, black and gold pattern"}, {"n": "Disco Retro 70s", "s": "All Year", "k": "disco ball, groovy retro typography frame, rainbow gradient stripes"}, {"n": "Garden Soiree Elegant", "s": "Spring", "k": "soft greenery and florals, linen texture background, delicate botanical border"}, {"n": "Wine Tasting Vineyard", "s": "Fall", "k": "vineyard grapes and vines, deep burgundy tones, rustic wood texture"}, {"n": "Tropical Cocktail Bash", "s": "Summer", "k": "palm leaves, cocktail glass silhouette, citrus slices, sunset colors"}, {"n": "Black Tie Milestone Gala", "s": "All Year", "k": "elegant black and gold border, sparkle texture, formal script frame"}, {"n": "Boho Desert Birthday", "s": "All Year", "k": "terracotta tones, cactus silhouette, dried pampas grass, warm neutral palette"}]}, "baby_shower": {"label": "🍼 Baby Shower", "items": [{"n": "Spring Floral Baby Shower", "s": "Spring", "k": "soft pastel florals, greenery sprigs, watercolor wreath border"}, {"n": "Bunny Baby Shower", "s": "Spring", "k": "soft bunny rabbit, floral basket, pastel green and cream"}, {"n": "Wildflower Meadow Baby", "s": "Spring", "k": "wildflower sprigs, butterflies, soft sage green and dusty pink"}, {"n": "Sunshine & Rainbows Baby", "s": "Summer", "k": "sunshine rays, soft rainbow arc, clouds, cheerful yellow and white"}, {"n": "Little Peanut Baby Shower", "s": "Summer", "k": "peanut illustration, soft leafy vine border, warm neutral tones"}, {"n": "Tropical Baby Shower", "s": "Summer", "k": "monstera leaves, tropical flowers, soft coral and green"}, {"n": "Little Pumpkin Baby Shower", "s": "Fall", "k": "soft pumpkin illustration, autumn leaves, warm cream and burnt orange"}, {"n": "Woodland Baby Shower", "s": "Fall", "k": "fox and deer, forest leaves, soft sage and terracotta"}, {"n": "Winter Baby Wonderland", "s": "Winter", "k": "snowflakes, soft pine sprigs, icy blue and silver sparkle"}, {"n": "Baby It's Cold Outside", "s": "Winter", "k": "mittens, snowflakes, cozy scarf illustration, dusty blue and cream"}, {"n": "Twinkle Twinkle Little Star", "s": "All Year", "k": "soft stars and crescent moon, navy blue and gold sparkle"}, {"n": "Neutral Boho Baby Shower", "s": "All Year", "k": "dried pampas grass, terracotta arch shape, warm neutral boho palette"}, {"n": "Safari Baby Shower", "s": "All Year", "k": "soft safari animals, palm leaves, warm sand and sage tones"}, {"n": "What Will It Bee Gender Reveal", "s": "All Year", "k": "honeybee illustration, honeycomb pattern, soft yellow and black accents"}, {"n": "Elephant Baby Shower", "s": "All Year", "k": "soft elephant illustration, balloon garland, powder blue or blush pink"}, {"n": "Cloud & Moon Baby Shower", "s": "All Year", "k": "fluffy clouds, crescent moon, stars, soft dreamy pastel blue"}, {"n": "Nautical Sailor Baby Shower", "s": "All Year", "k": "sailboat, anchor, stripes, navy and white nautical rope border"}, {"n": "Sage Green Botanical Baby", "s": "All Year", "k": "eucalyptus sprigs, soft botanical wreath, sage green and cream"}]}, "bridal_shower": {"label": "💍 Bridal Shower", "items": [{"n": "Garden Tea Party Bridal", "s": "Spring", "k": "delicate teacup illustration, garden roses, soft pastel florals"}, {"n": "Pastel Watercolor Bridal", "s": "Spring", "k": "soft watercolor floral wash, blush and lavender tones"}, {"n": "Tropical Escape Bridal", "s": "Summer", "k": "palm leaves, tropical florals, coral and turquoise"}, {"n": "Sunflower Bridal Shower", "s": "Summer", "k": "sunflowers, wheat sprigs, warm golden yellow palette"}, {"n": "Rustic Autumn Bridal", "s": "Fall", "k": "autumn leaves, wheat stalks, burnt orange and rust tones"}, {"n": "Wine & Vineyard Bridal", "s": "Fall", "k": "grape vines, wine glass silhouette, deep burgundy and gold"}, {"n": "Winter Wonderland Bridal", "s": "Winter", "k": "soft snowflakes, pine sprigs, icy blue and silver"}, {"n": "Brunch & Bubbly Bridal", "s": "All Year", "k": "champagne glass illustration, soft gold sparkle, delicate florals"}, {"n": "Around the Clock Bridal", "s": "All Year", "k": "vintage clock illustration, soft floral border, blush and gold"}, {"n": "Elegant Blush Floral Bridal", "s": "All Year", "k": "romantic blush roses, gold line art, soft ivory background"}, {"n": "Bohemian Wildflower Bridal", "s": "All Year", "k": "dried wildflowers, boho arch shape, terracotta and cream"}, {"n": "Love is Sweet Dessert Bridal", "s": "All Year", "k": "macarons and pastries illustration, soft pink and gold"}]}, "wedding": {"label": "💒 Wedding", "items": [{"n": "Elegant Floral Wedding", "s": "All Year", "k": "romantic floral wreath, delicate line art, soft ivory and sage"}, {"n": "Minimalist Modern Wedding", "s": "All Year", "k": "clean minimal line border, subtle geometric accent, neutral tones"}, {"n": "Boho Wildflower Wedding", "s": "All Year", "k": "dried wildflowers, boho arch, terracotta and dusty rose"}, {"n": "Vintage Romantic Wedding", "s": "All Year", "k": "vintage floral engraving style, soft cream and gold"}, {"n": "Rustic Barn Wedding", "s": "Fall", "k": "wood texture border, wheat sprigs, warm rust and cream"}, {"n": "Garden Romance Wedding", "s": "Spring", "k": "lush garden roses, soft greenery frame, blush and sage"}, {"n": "Gold Foil Luxury Wedding", "s": "All Year", "k": "elegant gold foil border, deep emerald or black background"}, {"n": "Beach Destination Wedding", "s": "Summer", "k": "soft palm silhouette, ocean wave line art, sandy beige and blue"}, {"n": "Winter Elegant Wedding", "s": "Winter", "k": "soft pine and berry sprigs, deep green and gold"}, {"n": "Watercolor Botanical Wedding", "s": "All Year", "k": "soft watercolor botanical wash, sage green and blush"}]}, "baptism": {"label": "✝️ Baptism / Christening", "items": [{"n": "Elegant Cross Floral Baptism", "s": "All Year", "k": "delicate cross illustration, soft floral wreath, ivory and gold"}, {"n": "Little Lamb Baptism", "s": "All Year", "k": "soft lamb illustration, cloud accents, pastel blue or cream"}, {"n": "Angel Wings Baptism", "s": "All Year", "k": "soft angel wings, delicate halo accent, white and gold"}, {"n": "Dove & Cross Baptism", "s": "All Year", "k": "dove in flight, cross silhouette, soft sky blue and white"}, {"n": "Classic Blue or Pink Baptism", "s": "All Year", "k": "simple elegant border, soft ribbon accent, classic blue or blush pink"}]}, "graduation": {"label": "🎓 Graduation", "items": [{"n": "Classic Cap & Gown Graduation", "s": "All Year", "k": "graduation cap silhouette, diploma scroll, navy and gold"}, {"n": "Modern Minimalist Graduation", "s": "All Year", "k": "clean minimal line border, subtle laurel accent, neutral palette"}, {"n": "Bold Confetti Graduation", "s": "All Year", "k": "colorful confetti burst, bold modern typography frame"}, {"n": "School Colors Graduation", "s": "All Year", "k": "simple color block border, laurel wreath accent, customizable school colors"}, {"n": "Elegant Gold Graduation", "s": "All Year", "k": "gold foil laurel wreath, elegant script frame, black and gold"}]}, "holiday": {"label": "🎄 Holiday / Seasonal Party", "items": [{"n": "Christmas Party Invitation", "s": "Winter", "k": "pine branches, string lights, ornaments, deep green and red"}, {"n": "Halloween Spooky Cute Party", "s": "Fall", "k": "cute pumpkins, bats, cobweb corner accent, orange and black"}, {"n": "Thanksgiving Gathering", "s": "Fall", "k": "autumn leaves, wheat sprigs, pumpkin accent, warm rust and cream"}, {"n": "New Year's Eve Party", "s": "Winter", "k": "gold confetti, champagne bubbles, sparkle burst, black and gold"}, {"n": "Easter Brunch Invitation", "s": "Spring", "k": "pastel eggs, spring blooms, soft bunny accent, pastel palette"}, {"n": "Valentine's Day Party", "s": "Winter", "k": "soft hearts, delicate florals, blush pink and red"}, {"n": "4th of July BBQ Bash", "s": "Summer", "k": "stars and stripes, watermelon slice, red white and blue"}, {"n": "Friendsgiving Party", "s": "Fall", "k": "autumn leaves, cozy string lights, warm terracotta and cream"}]}, "life_events": {"label": "🎉 Other Life Events", "items": [{"n": "Anniversary Celebration", "s": "All Year", "k": "soft heart accent, delicate floral border, romantic blush and gold"}, {"n": "Retirement Party", "s": "All Year", "k": "celebratory confetti, simple modern border, customizable palette"}, {"n": "Housewarming Party", "s": "All Year", "k": "soft house illustration, greenery accent, warm neutral tones"}, {"n": "Engagement Party", "s": "All Year", "k": "soft ring illustration, delicate floral frame, blush and gold"}, {"n": "Gender Reveal Party", "s": "All Year", "k": "soft pink and blue split accent, balloon illustration, question mark motif"}, {"n": "Quinceañera Celebration", "s": "All Year", "k": "elegant tiara accent, floral frame, soft pink and gold sparkle"}, {"n": "Sweet 16 Party", "s": "All Year", "k": "bold modern typography frame, sparkle burst, customizable bright palette"}, {"n": "Bar/Bat Mitzvah Celebration", "s": "All Year", "k": "elegant Star of David accent, modern geometric border, navy and gold"}, {"n": "Baby Sprinkle", "s": "All Year", "k": "soft rain cloud illustration, delicate droplet accent, pastel palette"}, {"n": "Farewell / Going Away Party", "s": "All Year", "k": "soft suitcase and map illustration, warm travel-inspired palette"}]}};
+
+const catSelect = document.getElementById('catSelect');
+const themeSelect = document.getElementById('themeSelect');
+const seasonFilter = document.getElementById('seasonFilter');
+const themeSearch = document.getElementById('themeSearch');
+const themeMeta = document.getElementById('themeMeta');
+
+let flatThemes = [];
+for(const [catId, cat] of Object.entries(THEMES)){
+  cat.items.forEach(it => flatThemes.push({catId, catLabel:cat.label, ...it}));
+}
+
+function initStats(){
+  document.getElementById('statTotal').textContent = flatThemes.length;
+  document.getElementById('statCat').textContent = Object.keys(THEMES).length;
+}
+
+function populateCategories(){
+  catSelect.innerHTML = '<option value="all">Semua Kategori</option>' +
+    Object.entries(THEMES).map(([id,c]) => `<option value="${id}">${c.label}</option>`).join('');
+}
+
+function populateThemes(){
+  const cat = catSelect.value;
+  const season = seasonFilter.value;
+  const search = themeSearch.value.trim().toLowerCase();
+  let list = flatThemes.filter(t => {
+    if(cat !== 'all' && t.catId !== cat) return false;
+    if(season !== 'all' && t.s !== season) return false;
+    if(search && !(t.n.toLowerCase().includes(search) || t.s.toLowerCase().includes(search) || t.catLabel.toLowerCase().includes(search))) return false;
+    return true;
+  });
+  if(list.length === 0){
+    themeSelect.innerHTML = '<option value="">(tidak ada hasil)</option>';
+    themeMeta.textContent = '';
+    return;
+  }
+  themeSelect.innerHTML = list.map((t,i) => `<option value="${t.catId}::${t.n}">${t.n} — ${t.s}</option>`).join('');
+  updateMeta();
+}
+
+function getSelectedTheme(){
+  const val = themeSelect.value;
+  if(!val) return null;
+  const [catId, name] = val.split('::');
+  return flatThemes.find(t => t.catId === catId && t.n === name);
+}
+
+function updateMeta(){
+  const t = getSelectedTheme();
+  if(!t){ themeMeta.textContent=''; return; }
+  themeMeta.innerHTML = `Kategori: <b>${t.catLabel}</b> &nbsp;·&nbsp; Season: <span class="season-tag">${t.s}</span> &nbsp;·&nbsp; Motif: ${t.k}`;
+}
+
+catSelect.addEventListener('change', populateThemes);
+seasonFilter.addEventListener('change', populateThemes);
+themeSearch.addEventListener('input', populateThemes);
+themeSelect.addEventListener('change', updateMeta);
+
+// ---------- GENERATOR LOGIC ----------
+
+function generatePromptText(theme, palette, layout){
+  return `Create a decorative invitation card background design, portrait orientation, exact size 5x7 inches (1500x2100px, 300dpi print resolution).
+
+THEME: ${theme.n} (${theme.s} season)
+MOTIFS: ${theme.k}
+PALETTE MOOD: ${palette} — colors must be clearly identifiable and true to name, NOT dark, muddy, or desaturated.
+LAYOUT: ${layout}. Leave a large clean empty negative-space area in the center-upper zone (for event title text) and a smaller clean empty area in the lower third (for date, time, location, RSVP details) — these zones must stay free of illustration so text can be added afterward in Canva.
+STYLE: Flat modern illustration / soft watercolor hybrid, high-quality print-ready design, clean vector-like edges, no photorealism, no dynamic diagonal clutter lines.
+BORDER: Decorative themed border or corner ornaments framing the edges of the 5x7 canvas, consistent margin on all sides.
+STRICT RULES: Absolutely NO text, NO typography, NO letters, NO numbers, NO logos, NO watermark, NO people's faces, NO real photos — illustration and ornamental elements only. Background must be a single card design, not a mockup, not multiple cards, not a UI frame.
+OUTPUT: One clean 5x7 portrait invitation background design ready to import into Canva for text customization.`;
+}
+
+function generateTitle(theme){
+  const catShort = theme.catLabelShort || theme.catLabel.replace(/^[^\w]+/,'').trim();
+  let base = `${theme.n} Invitation Template Canva Editable 5x7 | ${catShort} Printable Digital Download`;
+  if(base.length > 140) base = base.slice(0,137) + '...';
+  return base;
+}
+
+function generateDescription(theme, palette){
+  return `🎉 ${theme.n} Invitation Template — Instantly Editable in Canva!
+
+Celebrate in style with this ${theme.s.toLowerCase()} ${theme.n.toLowerCase()} design, sized perfectly at 5x7 inches for print or digital sharing.
+
+✔ Fully editable in Canva (free account works) — change text, colors, and details in minutes
+✔ Size: 5x7 inches (1500x2100px, 300 DPI print-ready)
+✔ ${palette} color palette — customizable to match your event
+✔ Print at home, at a local print shop, or send as a digital invite via text/WhatsApp/email
+✔ Instant download — no waiting, no shipping
+✔ Personalize name, date, time, location, and RSVP details easily
+
+This listing includes a Canva template link (no software installation needed). Perfect for ${theme.catLabelPlain || 'your celebration'}.
+
+Note: This is a digital file only, no physical item will be shipped. Colors may vary slightly depending on screen/printer settings.`;
+}
+
+function slugTag(s, maxLen=20){
+  let t = s.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+  if(t.length > maxLen) t = t.slice(0,maxLen).trim();
+  return t;
+}
+
+function generateTags(theme, palette){
+  const words = theme.n.split(' ').filter(w => w.length>2);
+  let pool = [
+    theme.n,
+    `${theme.n} invite`,
+    `${theme.s} invitation`,
+    'canva template',
+    'editable invitation',
+    'printable invite',
+    'instant download',
+    `${theme.catLabelPlain || 'party'} invite`,
+    `5x7 invitation`,
+    palette.toLowerCase(),
+    `digital invitation`,
+    words[0] ? `${words[0]} party` : 'party invite',
+    'diy invitation'
+  ];
+  let tags = pool.map(t => slugTag(t)).filter((v,i,a)=> v && a.indexOf(v)===i);
+  while(tags.length < 13){ tags.push(slugTag(theme.n + ' ' + tags.length)); }
+  return tags.slice(0,13);
+}
+
+const catPlainMap = {};
+for(const [id,c] of Object.entries(THEMES)){
+  catPlainMap[id] = c.label.replace(/^[^\w]+/,'').trim();
+}
+
+function generateAll(){
+  const theme = getSelectedTheme();
+  if(!theme){ alert('Pilih tema dulu ya!'); return; }
+  theme.catLabelPlain = catPlainMap[theme.catId];
+  theme.catLabelShort = catPlainMap[theme.catId];
+  const palette = document.getElementById('paletteSelect').value;
+  const layout = document.getElementById('layoutSelect').value;
+
+  const prompt = generatePromptText(theme, palette, layout);
+  const title = generateTitle(theme);
+  const desc = generateDescription(theme, palette);
+  const tags = generateTags(theme, palette);
+
+  document.getElementById('resultCard').style.display = 'block';
+  setBoxContent('promptOut', prompt);
+  setBoxContent('titleOut', title + `\n\n(${title.length}/140 karakter)`);
+  setBoxContent('descOut', desc);
+  setBoxContent('tagsOut', tags.join(', '));
+  document.getElementById('tagsPillWrap').innerHTML = tags.map(t => `<span class="tag-pill">${t} (${t.length})</span>`).join('');
+
+  // simpan hasil generate terakhir buat dipakai export PDF
+  currentGenerated = { theme, palette, layout, prompt, title, desc, tags };
+
+  document.getElementById('resultCard').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+let currentGenerated = null;
+
+function setBoxContent(id, text){
+  const box = document.getElementById(id);
+  box.innerHTML = `<button class="copy-btn" onclick="copyBox('${id}')">Copy</button>` + text.replace(/</g,'&lt;');
+}
+
+function copyBox(id){
+  const box = document.getElementById(id);
+  const text = box.innerText.replace(/^Copy\s*/,'');
+  navigator.clipboard.writeText(text.trim()).then(()=>{
+    const btn = box.querySelector('.copy-btn');
+    const old = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(()=> btn.textContent = old, 1200);
+  });
+}
+
+// ---------- PDF EXPORT (Cover + Canva Link) ----------
+function exportListingPDF(){
+  if(!currentGenerated){ alert('Generate dulu tema-nya ya, baru export PDF.'); return; }
+  const canvaLink = document.getElementById('canvaLinkInput').value.trim();
+  if(!canvaLink){ alert('Isi link Canva template-nya dulu ya.'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'in', format:'letter' });
+  const pink = [201,107,149];
+  const dark = [58,46,53];
+  const accent = [122,92,126];
+
+  // ---- COVER PAGE ----
+  doc.setFillColor(...pink);
+  doc.rect(0,0,8.5,2.2,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(22);
+  doc.text('LenaTemplate', 0.6, 1.0);
+  doc.setFontSize(12);
+  doc.setFont('helvetica','normal');
+  doc.text('Invitation Template — Digital Delivery', 0.6, 1.4);
+
+  doc.setTextColor(...dark);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(18);
+  doc.text(currentGenerated.theme.n, 0.6, 2.9);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(11);
+  doc.setTextColor(...accent);
+  doc.text(`Season: ${currentGenerated.theme.s}   |   Kategori: ${currentGenerated.theme.catLabelPlain || ''}`, 0.6, 3.25);
+  doc.text(`Palette: ${currentGenerated.palette}   |   Size: 5x7 in (1500x2100px, 300dpi)`, 0.6, 3.5);
+
+  doc.setDrawColor(...pink);
+  doc.setLineWidth(0.02);
+  doc.line(0.6, 3.75, 7.9, 3.75);
+
+  doc.setTextColor(...dark);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(13);
+  doc.text('Klik link di bawah untuk buka template Canva:', 0.6, 4.2);
+
+  doc.setTextColor(...pink);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(12);
+  doc.textWithLink(canvaLink, 0.6, 4.55, { url: canvaLink });
+
+  doc.setTextColor(...accent);
+  doc.setFontSize(10);
+  doc.text([
+    'Cara pakai:',
+    '1. Klik link di atas untuk membuka template di Canva.',
+    '2. Klik "Use template" / "Gunakan template" untuk menyalin ke akun Canva kamu.',
+    '3. Edit teks (nama, tanggal, waktu, lokasi, RSVP) dan warna sesuai kebutuhan.',
+    '4. Download sebagai PDF/JPG/PNG untuk dicetak atau dibagikan secara digital.'
+  ], 0.6, 5.0);
+
+  doc.setFontSize(9);
+  doc.setTextColor(180,160,170);
+  doc.text('Thank you for your purchase! — LenaTemplate', 0.6, 10.4);
+
+  // ---- PAGE 2: LISTING DETAIL ----
+  doc.addPage();
+  doc.setTextColor(...pink);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(14);
+  doc.text('Detail Listing', 0.6, 0.7);
+
+  doc.setTextColor(...dark);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10.5);
+  doc.text('Judul:', 0.6, 1.1);
+  doc.setFont('helvetica','normal');
+  const titleLines = doc.splitTextToSize(currentGenerated.title, 7.3);
+  doc.text(titleLines, 0.6, 1.35);
+
+  let y = 1.35 + titleLines.length*0.2 + 0.35;
+  doc.setFont('helvetica','bold');
+  doc.text('Tags:', 0.6, y);
+  doc.setFont('helvetica','normal');
+  const tagLines = doc.splitTextToSize(currentGenerated.tags.join(', '), 7.3);
+  doc.text(tagLines, 0.6, y+0.25);
+
+  y = y + 0.25 + tagLines.length*0.2 + 0.35;
+  doc.setFont('helvetica','bold');
+  doc.text('Canva Link:', 0.6, y);
+  doc.setTextColor(...pink);
+  doc.setFont('helvetica','normal');
+  doc.textWithLink(canvaLink, 0.6, y+0.25, { url: canvaLink });
+
+  const filename = `LenaTemplate_${currentGenerated.theme.n.replace(/[^a-z0-9]+/gi,'_')}.pdf`;
+  doc.save(filename);
+}
+
+// ---------- SAVE / PERSIST ----------
+function loadSaved(){
+  try{
+    const raw = localStorage.getItem('lena_invitation_saved');
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function writeSaved(arr){
+  localStorage.setItem('lena_invitation_saved', JSON.stringify(arr));
+  renderSaved();
+}
+function saveCurrent(){
+  const theme = getSelectedTheme();
+  if(!theme){ alert('Pilih tema dulu ya!'); return; }
+  const palette = document.getElementById('paletteSelect').value;
+  const layout = document.getElementById('layoutSelect').value;
+  const arr = loadSaved();
+  arr.push({name:theme.n, season:theme.s, cat:theme.catLabel, palette, layout, ts:Date.now()});
+  writeSaved(arr);
+}
+function renderSaved(){
+  const arr = loadSaved();
+  document.getElementById('statSaved').textContent = arr.length;
+  const el = document.getElementById('savedList');
+  if(arr.length === 0){ el.innerHTML = '<div class="empty">Belum ada tema disimpan.</div>'; return; }
+  el.innerHTML = arr.map((item, idx) => `
+    <div class="saved-item">
+      <span><b>${item.name}</b> — ${item.season} · ${item.cat} · ${item.palette}</span>
+      <button class="del" onclick="deleteSaved(${idx})">✕</button>
+    </div>
+  `).join('');
+}
+function deleteSaved(idx){
+  const arr = loadSaved();
+  arr.splice(idx,1);
+  writeSaved(arr);
+}
+function clearSaved(){
+  if(confirm('Hapus semua list tersimpan?')){ writeSaved([]); }
+}
+function exportSaved(){
+  const arr = loadSaved();
+  if(arr.length === 0){ alert('List masih kosong.'); return; }
+  const lines = arr.map((it,i) => `${i+1}. ${it.name} | ${it.season} | ${it.cat} | Palette: ${it.palette} | Layout: ${it.layout}`);
+  const blob = new Blob([lines.join('\n')], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'lenatemplate_invitation_list.txt';
+  a.click();
+}
+
+// ---------- INIT ----------
+initStats();
+populateCategories();
+populateThemes();
+renderSaved();
+</script>
+</body>
+</html>
